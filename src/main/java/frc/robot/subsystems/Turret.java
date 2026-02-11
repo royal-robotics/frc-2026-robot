@@ -25,9 +25,9 @@ public class Turret extends SubsystemBase{
     private MagnetSensorConfigs magnetConfigs = new MagnetSensorConfigs();
     public Turret() {
         TurretAngleMotor = new TalonFX(0);
-        TurretHoodMotor = new TalonFX(0);
-        TurretShooterMotor = new TalonFX(0);
-        TurretShooterFollowerMotor = new TalonFX(0);
+        TurretHoodMotor = new TalonFX(10);
+        TurretShooterMotor = new TalonFX(11);
+        TurretShooterFollowerMotor = new TalonFX(12);
 
         TurretAngleMotor.getConfigurator().apply(outfitConfigs);
         TurretHoodMotor.getConfigurator().apply(outfitConfigs);
