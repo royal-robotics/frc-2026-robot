@@ -13,7 +13,7 @@ public class Spindexer extends SubsystemBase {
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
 
     public Spindexer() {
-        SpinnerMotor = new TalonFX(0);
+        SpinnerMotor = new TalonFX(9);
         SpinnerMotor.getConfigurator().apply(outfitConfigs);
         SpinnerMotor.getConfigurator().apply(limitsConfigs);
 
