@@ -35,6 +35,19 @@ public class Climber extends SubsystemBase{
       return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Degrees.of(0))));
   }
 
+  public Command ClimberManual(){
+      return run(()->{
+        if (SmartDashboard.getBollean("ClimberManualOverride", ClimberManualOverride)){
+            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverride)));
+         }
+
+        else {
+            ClimberManualOverrideValue = ClimberPosition();
+            SmartDashboard.putNumber("ClimberManualOverrideValue", ClimberManualOverrideValue);
+         }
+      })
+  }
+
   public void periodic() {
   }
 }
