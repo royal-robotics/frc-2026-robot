@@ -24,7 +24,7 @@ public class Turret extends SubsystemBase{
     private Slot0Configs slotConfigs = new Slot0Configs();
     private MagnetSensorConfigs magnetConfigs = new MagnetSensorConfigs();
     public Turret() {
-        TurretAngleMotor = new TalonFX(0);
+        TurretAngleMotor = new TalonFX(13);
         TurretHoodMotor = new TalonFX(10);
         TurretShooterMotor = new TalonFX(11);
         TurretShooterFollowerMotor = new TalonFX(12);
@@ -41,8 +41,8 @@ public class Turret extends SubsystemBase{
 
         TurretAngleMotor.getConfigurator().apply(slotConfigs);
 
-        TurretAngleSmall = new CANcoder(0);
-        TurretAngleBig = new CANcoder(0);
+        TurretAngleSmall = new CANcoder(5);
+        TurretAngleBig = new CANcoder(6);
         TurretAngleSmall.getConfigurator().apply(magnetConfigs);
         TurretAngleBig.getConfigurator().apply(magnetConfigs);
     }
