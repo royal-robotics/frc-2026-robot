@@ -1,15 +1,17 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.units.measure.*;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-//import pabeles.concurrency.ConcurrencyOps.NewInstance;
 
 public class Climber extends SubsystemBase{
    
@@ -19,12 +21,21 @@ public class Climber extends SubsystemBase{
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs();
     private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs();
 
+    private StatusSignal<Angle> ClimberPositionSignal;
+
     private PositionVoltage ClimberPosition = new PositionVoltage(Degrees.of(0)); //ratio is 1:25
+    private boolean ClimberManualOverride = false;
+    private double ClimberManualOverrideValue = 0.0;
 
     public Climber() {
       ClimberMotor = new TalonFX(0);
         ClimberMotor.getConfigurator().apply (IntakeMotorConfig);
         ClimberMotor.getConfigurator().apply(IntakeCurrentConfig);
+        ClimberPositionSignal = ClimberMotor.getPosition();
+  }
+
+  public double ClimberPosition() {
+    return ClimberPositionSignal.getValueAsDouble();
   }
 
   public Command ClimberUPPP(){
@@ -37,15 +48,15 @@ public class Climber extends SubsystemBase{
 
   public Command ClimberManual(){
       return run(()->{
-        if (SmartDashboard.getBollean("ClimberManualOverride", ClimberManualOverride)){
-            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverride)));
+        if (SmartDashboard.getBoolean("ClimberManualOverride", ClimberManualOverride)){
+            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverrideValue)));
          }
 
         else {
             ClimberManualOverrideValue = ClimberPosition();
             SmartDashboard.putNumber("ClimberManualOverrideValue", ClimberManualOverrideValue);
          }
-      })
+      });
   }
 
   public void periodic() {
