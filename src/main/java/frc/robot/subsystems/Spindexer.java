@@ -9,13 +9,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Spindexer extends SubsystemBase {
     private TalonFX SpinnerMotor;
+    private TalonFX UptakeMotor;
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
 
     public Spindexer() {
         SpinnerMotor = new TalonFX(9);
+        UptakeMotor = new TalonFX(15);
         SpinnerMotor.getConfigurator().apply(outfitConfigs);
         SpinnerMotor.getConfigurator().apply(limitsConfigs);
+        UptakeMotor.getConfigurator().apply(outfitConfigs);
+        UptakeMotor.getConfigurator().apply(limitsConfigs);
 
     }
     public void periodic() {

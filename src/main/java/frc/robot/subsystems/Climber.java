@@ -28,7 +28,7 @@ public class Climber extends SubsystemBase{
     private double ClimberManualOverrideValue = 0.0;
 
     public Climber() {
-      ClimberMotor = new TalonFX(0);
+      ClimberMotor = new TalonFX(14);
         ClimberMotor.getConfigurator().apply (IntakeMotorConfig);
         ClimberMotor.getConfigurator().apply(IntakeCurrentConfig);
         ClimberPositionSignal = ClimberMotor.getPosition();
