@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.*;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -60,6 +61,7 @@ public class Climber extends SubsystemBase{
   }
 
   public void periodic() {
+    BaseStatusSignal.refreshAll(ClimberPositionSignal);
   }
 }
 

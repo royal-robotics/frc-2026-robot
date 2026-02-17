@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 //import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -40,6 +41,7 @@ public class Spindexer extends SubsystemBase {
         UptakeVelocity = UptakeMotor.getVelocity();
     }
     public void periodic() {
+        BaseStatusSignal.refreshAll(SpindexerVelocity,UptakeVelocity);
     }
     
     public double SpindexerVelocity() {
