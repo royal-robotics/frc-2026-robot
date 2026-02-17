@@ -12,6 +12,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -21,73 +22,127 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Vision {
-    private final PhotonCamera downCamera = new PhotonCamera("Down");
-    private final PhotonCamera upCamera = new PhotonCamera("Up");
+@Logged
+public class Vision extends SubsystemBase {
+    private final PhotonCamera shooterCamera = new PhotonCamera("Shooter");
+    private final PhotonCamera backLeftCamera = new PhotonCamera("BackLeft");
+    private final PhotonCamera frontLeftCamera = new PhotonCamera("FrontLeft");
+    private final PhotonCamera backRightCamera = new PhotonCamera("BackRight");
+    private final PhotonCamera frontRightCamera = new PhotonCamera("FrontRight");
+    private final PhotonCamera frontCamera = new PhotonCamera("Front");
+
+    private Pose3d frontPose = new Pose3d();
+    private Pose3d frontLeftPose = new Pose3d();
+    private Pose3d frontRightPose = new Pose3d();
+    private Pose3d backLeftPose = new Pose3d();
+    private Pose3d backRightPose = new Pose3d();
+
 
     private final AprilTagFieldLayout fieldLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-    private final Transform3d downRobotToCamera = new Transform3d(
+    private final Transform3d backLeftRobotToCamera = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(10.305),
-            Units.inchesToMeters(11.0),
-            Units.inchesToMeters(26.6315)
+            Units.inchesToMeters(8.0525),
+            Units.inchesToMeters(6.6524),
+            Units.inchesToMeters(14.5819)
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(25.0),
-            Units.degreesToRadians(0.0)
+            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(155.0)
         ));
-    private final Transform3d upRobotToCamera = new Transform3d(
+    private final Transform3d frontLeftRobotToCamera = new Transform3d(
         new Translation3d(
-            Units.inchesToMeters(10.305),
-            Units.inchesToMeters(-11.0),
-            Units.inchesToMeters(26.6315)
+            Units.inchesToMeters(10.3128),
+            Units.inchesToMeters(6.41808),
+            Units.inchesToMeters(14.5819)
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(25.0),
-            Units.degreesToRadians(0.0)
+            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(75.0)
+        ));
+    private final Transform3d backRightRobotToCamera = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(8.398),
+            Units.inchesToMeters(-12.9322),
+            Units.inchesToMeters(14.58198)
+        ),
+        new Rotation3d(
+            Units.degreesToRadians(0.0),
+            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-135.0)
+        ));
+    private final Transform3d frontRightRobotToCamera = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(11.9471),
+            Units.inchesToMeters(-11.4345),
+            Units.inchesToMeters(14.5819)
+        ),
+        new Rotation3d(
+            Units.degreesToRadians(0.0),
+            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-60.0)
+        ));
+    private final Transform3d frontRobotToCamera = new Transform3d(
+        new Translation3d(
+            Units.inchesToMeters(12.5286),
+            Units.inchesToMeters(3.3754),
+            Units.inchesToMeters(14.5819)
+        ),
+        new Rotation3d(
+            Units.degreesToRadians(0.0),
+            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-5.0)
         ));
 
-    private final PhotonPoseEstimator downPoseEstimator;
-    private final PhotonPoseEstimator upPoseEstimator;
+    private final PhotonPoseEstimator backRightPoseEstimator;
+    private final PhotonPoseEstimator backLeftPoseEstimator;
+    private final PhotonPoseEstimator frontLeftPoseEstimator;
+    private final PhotonPoseEstimator frontRightPoseEstimator;
+    private final PhotonPoseEstimator frontPoseEstimator;
+
 
     public Vision() {
-        downPoseEstimator = new PhotonPoseEstimator(fieldLayout,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, downRobotToCamera);
-        upPoseEstimator = new PhotonPoseEstimator(fieldLayout,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, upRobotToCamera);
-        downPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-        upPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        frontLeftPoseEstimator = new PhotonPoseEstimator(fieldLayout,
+             frontLeftRobotToCamera);
+        frontRightPoseEstimator = new PhotonPoseEstimator(fieldLayout,
+             frontRightRobotToCamera);
+        backLeftPoseEstimator = new PhotonPoseEstimator(fieldLayout,
+             backLeftRobotToCamera);
+        backRightPoseEstimator = new PhotonPoseEstimator(fieldLayout,
+             backRightRobotToCamera);
+        frontPoseEstimator = new PhotonPoseEstimator(fieldLayout,
+             frontRobotToCamera);
     }
 
-    public PoseEstimate getEstimatedPose() {
-        PoseEstimate downEstimate = getEstimatedRobotPoseForCamera(downCamera, downPoseEstimator);
-        PoseEstimate upEstimate = getEstimatedRobotPoseForCamera(upCamera, upPoseEstimator);
+    public void periodic(){
+        getEstimatedPose();
+    }
 
-        if (downEstimate != null && upEstimate != null) {
-            if (downEstimate.getEstimatedStdDev().elementSum() < upEstimate.getEstimatedStdDev().elementSum()) {
-                return downEstimate;
-            } else {
-                return upEstimate;
-            }
-        } else {
-            if (downEstimate != null) {
-                return downEstimate;
-            } else {
-                return upEstimate;
-            }
-        }
+    public void getEstimatedPose() {
+        PoseEstimate frontEstimate = getEstimatedRobotPoseForCamera(frontCamera, frontPoseEstimator);
+        PoseEstimate frontRightEstimate = getEstimatedRobotPoseForCamera(frontRightCamera, frontRightPoseEstimator);
+        PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
+        PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
+        PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
+
+        if (frontEstimate !=null) {frontPose = frontEstimate.estimatedRobotPose.estimatedPose;}
+        if (frontLeftEstimate !=null) {frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;}
+        if (frontRightEstimate !=null) {frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;}
+        if (backLeftEstimate !=null) {backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;}
+        if (backRightEstimate !=null) {backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;}
+
     }
 
     private PoseEstimate getEstimatedRobotPoseForCamera(PhotonCamera camera, PhotonPoseEstimator poseEstimator) {
         PoseEstimate currentPoseEstimate = null;
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (readingIsValid(result.getTargets())) {
-                Optional<EstimatedRobotPose> estimatedPose = poseEstimator.update(result);
+                Optional<EstimatedRobotPose> estimatedPose = poseEstimator.estimateCoprocMultiTagPose(result);
                 if (estimatedPose.isPresent()) {
                     EstimatedRobotPose possiblePose = estimatedPose.get();
                     if (poseIsValid(possiblePose)) {

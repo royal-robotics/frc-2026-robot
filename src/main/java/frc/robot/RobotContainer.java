@@ -23,6 +23,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.LED;
 
 @Logged
@@ -52,6 +53,7 @@ public class RobotContainer {
     public final Spindexer spindexer = new Spindexer();
     public final Turret turret = new Turret();
     public final LED led = new LED();
+    public final Vision vision = new Vision();
 
     public RobotContainer() {
         configureBindings();
