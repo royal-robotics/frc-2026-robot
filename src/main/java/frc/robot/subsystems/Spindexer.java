@@ -36,6 +36,8 @@ public class Spindexer extends SubsystemBase {
     private double SpindexerGearRatio = 6.3; 
     private double UptakeGearRatio = 34.0/12.0; 
 
+    private double SpindexerSpeed = 2.0;
+
     public Spindexer() {
         SpindexerMotor = new TalonFX(9, canBus);
         UptakeMotor = new TalonFX(15, canBus);
@@ -59,6 +61,14 @@ public class Spindexer extends SubsystemBase {
 
     public double UptakeVelocity() {
     return UptakeVelocity.getValueAsDouble();
+    }
+
+    public Command Spin(){
+        return run(()->SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio)));
+    }
+
+    public Command Unjam(){
+        return run(()->SpindexerMotor.setControl(VelocityControl.withVelocity(-0.5*SpindexerSpeed*SpindexerGearRatio)));
     }
 
     public Command SpindexerManual(){

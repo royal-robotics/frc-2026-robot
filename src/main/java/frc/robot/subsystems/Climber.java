@@ -31,7 +31,12 @@ public class Climber extends SubsystemBase{
     private boolean ClimberManualOverride = false;
     private double ClimberManualOverrideValue = 0.0;
 
-    private double ClimberGearRatio = 25;
+    private double ClimberGearRatio = 25.0;
+    private double ClimberDistanceRatio = ClimberGearRatio/2.36;
+    private double ClimberTop = 8.5;
+    private double ClimnberMiddle = 4;
+    private double ClimberBottom = 0;
+
 
     public Climber() {
       ClimberMotor = new TalonFX(14, canBus);
@@ -46,18 +51,22 @@ public class Climber extends SubsystemBase{
     return ClimberPositionSignal.getValueAsDouble();
   }
 
-  public Command ClimberUPPP(){
+  /*public Command ClimberUPPP(){
       return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Degrees.of(180))));
   }
 
   public Command ClimberDooooown(){
       return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Degrees.of(0))));
+  }*/
+
+  public Command ClimberToggle(){
+    return startEnd(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))),()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberBottom*ClimberDistanceRatio))));
   }
 
   public Command ClimberManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("ClimberManualOverride", ClimberManualOverride)){
-            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverrideValue)*ClimberGearRatio));
+            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverrideValue)*ClimberDistanceRatio));
          }
 
         else {

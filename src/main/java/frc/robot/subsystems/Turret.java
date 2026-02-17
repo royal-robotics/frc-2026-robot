@@ -58,6 +58,13 @@ public class Turret extends SubsystemBase{
     private double HoodGearRatio = (40.0/15.0)*(30.0/18.0)*(197.0/10.0);
     private double ShooterGearRatio = (32.0/16.0)*(16.0/15.0);
 
+    private double TurretAngleRatio = TurretGearRatio/360.0;
+    private double HoodAngleRatio = HoodGearRatio/360.0;
+
+    private double ShooterSpeed = 100;
+    private double TurretAngle = 0;
+
+
     public Turret() {
         TurretAngleMotor = new TalonFX(13, canBus);
         TurretHoodMotor = new TalonFX(10, canBus);
@@ -110,12 +117,19 @@ public class Turret extends SubsystemBase{
         BaseStatusSignal.refreshAll(turretAngleSignal, turretHoodSignal, turretShooterSignal);
     }
 
+public Command Shoot(){
+    return run(()->TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterSpeed*ShooterGearRatio)));
+}
+
+public Command LockPosition(){
+    return runOnce(()->TurretAngleMotor.setPosition(TurretAngle));
+}
 
   public Command TurretManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("TurretManualOverride", TurretOverride)){
-            TurretAngleMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretGearRatio));
-            TurretHoodMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodGearRatio));
+            TurretAngleMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretAngleRatio));
+            TurretHoodMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodAngleRatio));
             TurretShooterMotor.setControl(velocityControl.withVelocity(SmartDashboard.getNumber("TurretShooterOverride", TurretShooterOverride)*ShooterGearRatio));
          }
 

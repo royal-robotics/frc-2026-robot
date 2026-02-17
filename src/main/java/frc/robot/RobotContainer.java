@@ -28,6 +28,10 @@ import frc.robot.subsystems.LED;
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond); // 2 rotations per second max angular velocity
+    private double NormalSpeed = MaxSpeed * 0.75; // Normal drive speed is 75% of max speed
+    private double NormalAngularRate = MaxAngularRate * 0.75; // Normal rotation rate is 75% of max rotation rate
+    private double SlowSpeed = MaxSpeed * 0.25; // Slow drive speed is 25% of max speed
+    private double SlowAngularRate = MaxAngularRate * 0.225; // Slow rotation rate is 22.5% of max rotation rate
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -38,7 +42,7 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -58,9 +62,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -71,23 +75,39 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        //driver.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        //driver.b().whileTrue(drivetrain.applyRequest(() ->
+        //    point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
+        //));
+
+
+
+        driver.y().toggleOnTrue(climber.ClimberToggle());
+        //driver.leftBumper().whileTrue(intake.RunIntake());
+        //driver.leftTrigger().whileTrue(intake.Outtake());
+        driver.rightBumper().whileTrue(Commands.parallel(turret.Shoot(),spindexer.Spin()));
+        driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
+                drive.withVelocityX(-driver.getLeftY() * SlowSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * SlowSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * SlowAngularRate) // Drive counterclockwise with negative X (left)
+                    .withDeadband(SlowSpeed * 0.1).withRotationalDeadband(SlowAngularRate * 0.1) // Add a 10% deadband
+            ));
+        driver.a().whileTrue(spindexer.Unjam());
+        driver.b().toggleOnTrue(turret.LockPosition());
+        
+
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        operator.leftBumper().onTrue(climber.ClimberDooooown());
-        operator.rightBumper().onTrue(climber.ClimberUPPP());
+
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
