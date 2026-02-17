@@ -16,6 +16,7 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
@@ -45,7 +46,8 @@ public class Turret extends SubsystemBase{
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
     private Slot0Configs slotConfigs = new Slot0Configs();
-    private MagnetSensorConfigs magnetConfigs = new MagnetSensorConfigs();
+    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-65.039-180));
+    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-73.916-180));
 
     private StatusSignal<Angle> turretAngleSignal;
     private StatusSignal<Angle> turretHoodSignal;
@@ -72,8 +74,8 @@ public class Turret extends SubsystemBase{
     private double HoodAngleRatio = HoodGearRatio/360.0;
 
     private double ShooterSpeed = 100;
-    private double IdealHoodAngel = 20.0;
-    private double MotorHoodAngle = IdealHoodAngel-12.75;
+    private double IdealHoodAngle = 20.0;
+    private double MotorHoodAngle = IdealHoodAngle-12.75;
 
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
@@ -99,8 +101,8 @@ public class Turret extends SubsystemBase{
 
         TurretAngleSmall = new CANcoder(5,canBus);
         TurretAngleBig = new CANcoder(6,canBus);
-        TurretAngleSmall.getConfigurator().apply(magnetConfigs);
-        TurretAngleBig.getConfigurator().apply(magnetConfigs);
+        TurretAngleSmall.getConfigurator().apply(magnetConfigsSmall);
+        TurretAngleBig.getConfigurator().apply(magnetConfigsBig);
 
         turretAngleSignal = TurretAngleMotor.getPosition();
         turretHoodSignal = TurretHoodMotor.getPosition();
@@ -131,11 +133,11 @@ public class Turret extends SubsystemBase{
     }
 
      public double TurretEncoderBig() {
-        return turretAngelBigSignal.getValue().in(Degrees);
+        return turretAngelBigSignal.getValue().in(Degrees)+180.0;
     }
 
      public double TurretEncoderSmall() {
-        return turretAngleSmallSignal.getValue().in(Degrees);
+        return turretAngleSmallSignal.getValue().in(Degrees)+180.0;
     }
 
     public void periodic() {
@@ -172,15 +174,15 @@ public Command Shoot(){
 
   private void GetTurretAngle(){
     BaseStatusSignal.waitForAll(0.02,turretAngelBigSignal,turretAngleSmallSignal);
-    double BigAngle = turretAngelBigSignal.getValueAsDouble();
-    double SmallAngle = turretAngleSmallSignal.getValueAsDouble();
-    double BigEncoderRotations = BigAngle*BigTurretEncoderRatio/360;
-    double SmallEncoderRotations = SmallAngle*SmallTurretEncoderRatio/360;
+    double BigAngle = TurretEncoderBig();
+    double SmallAngle = TurretEncoderSmall();
+    double BigEncoderRotations = BigAngle/360.0;
+    double SmallEncoderRotations = SmallAngle/360.0;
     ArrayList <Double> SmallEncoder = new ArrayList<Double>();
     ArrayList <Double> BigEncoder = new ArrayList<Double>() ;
-    for (int i = -4 ; i <= 4 ; i++){
-        SmallEncoder.add((SmallEncoderRotations+i)*SmallTurretEncoderRatio*360);
-        BigEncoder.add((BigEncoderRotations+i)*BigTurretEncoderRatio*360);
+    for (int i = 0 ; i <= 8 ; i++){
+        SmallEncoder.add((SmallEncoderRotations+i)*SmallTurretEncoderRatio*360.0);
+        BigEncoder.add((BigEncoderRotations+i)*BigTurretEncoderRatio*360.0);
     }
     int BigPointer = 0;
     int SmallPointer = 0;
@@ -198,7 +200,7 @@ public Command Shoot(){
     FinalAngle = PossibleAngle;
     FinalError = PossibleError;
     }
-    if (BigPointer == BigEncoder.size()-1 && SmallPointer == SmallEncoder.size()-1){
+    if (BigPointer >= BigEncoder.size()-1 || SmallPointer >= SmallEncoder.size()-1){
         finished = true;
     } else {
         if (Big < Small){
