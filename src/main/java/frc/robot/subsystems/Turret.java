@@ -1,7 +1,11 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -18,12 +22,14 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+@Logged
 public class Turret extends SubsystemBase{
 
     private CANBus canBus = new CANBus("CAN");
@@ -44,6 +50,8 @@ public class Turret extends SubsystemBase{
     private StatusSignal<Angle> turretAngleSignal;
     private StatusSignal<Angle> turretHoodSignal;
     private StatusSignal<AngularVelocity> turretShooterSignal;
+    private StatusSignal<Angle> turretAngleSmallSignal;
+    private StatusSignal <Angle> turretAngelBigSignal;
 
     private PositionVoltage positionControl = new PositionVoltage(Rotations.of(0.0));
     private VelocityVoltage velocityControl = new VelocityVoltage(RotationsPerSecond.of(0.0));
@@ -57,14 +65,20 @@ public class Turret extends SubsystemBase{
     private double TurretGearRatio = 46;
     private double HoodGearRatio = (40.0/15.0)*(30.0/18.0)*(197.0/10.0);
     private double ShooterGearRatio = (32.0/16.0)*(16.0/15.0);
+    private double BigTurretEncoderRatio = 23.0/100.0;
+    private double SmallTurretEncoderRatio = 19.0/100.0;
 
     private double TurretAngleRatio = TurretGearRatio/360.0;
     private double HoodAngleRatio = HoodGearRatio/360.0;
 
     private double ShooterSpeed = 100;
-    private double TurretAngle = 0;
+    private double IdealHoodAngel = 20.0;
+    private double MotorHoodAngle = IdealHoodAngel-12.75;
 
+    private double RealTurretAngle = 0.0;
+    private double TurretAngleError = 0.0;
 
+    
     public Turret() {
         TurretAngleMotor = new TalonFX(13, canBus);
         TurretHoodMotor = new TalonFX(10, canBus);
@@ -95,6 +109,9 @@ public class Turret extends SubsystemBase{
         turretShooterSignal.waitForUpdate(0.02);
         TurretShooterFollowerMotor.setControl(followControl);
 
+        turretAngleSmallSignal = TurretAngleSmall.getAbsolutePosition();
+        turretAngelBigSignal = TurretAngleBig.getAbsolutePosition();
+
         SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
         SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
         SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
@@ -113,17 +130,26 @@ public class Turret extends SubsystemBase{
         return turretShooterSignal.getValueAsDouble();
     }
 
+     public double TurretEncoderBig() {
+        return turretAngelBigSignal.getValue().in(Degrees);
+    }
+
+     public double TurretEncoderSmall() {
+        return turretAngleSmallSignal.getValue().in(Degrees);
+    }
+
     public void periodic() {
-        BaseStatusSignal.refreshAll(turretAngleSignal, turretHoodSignal, turretShooterSignal);
+        BaseStatusSignal.refreshAll(turretAngleSignal, turretHoodSignal, turretShooterSignal,turretAngelBigSignal,turretAngleSmallSignal);
+        GetTurretAngle();
     }
 
 public Command Shoot(){
     return run(()->TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterSpeed*ShooterGearRatio)));
 }
 
-public Command LockPosition(){
-    return runOnce(()->TurretAngleMotor.setPosition(TurretAngle));
-}
+//public Command LockPosition(){
+   // return runOnce(()->TurretAngleMotor.setPosition(MotorTurretAngle));
+//}
 
   public Command TurretManual(){
       return run(()->{
@@ -143,4 +169,47 @@ public Command LockPosition(){
          }
       });
   }
-}
+
+  private void GetTurretAngle(){
+    BaseStatusSignal.waitForAll(0.02,turretAngelBigSignal,turretAngleSmallSignal);
+    double BigAngle = turretAngelBigSignal.getValueAsDouble();
+    double SmallAngle = turretAngleSmallSignal.getValueAsDouble();
+    double BigEncoderRotations = BigAngle*BigTurretEncoderRatio/360;
+    double SmallEncoderRotations = SmallAngle*SmallTurretEncoderRatio/360;
+    ArrayList <Double> SmallEncoder = new ArrayList<Double>();
+    ArrayList <Double> BigEncoder = new ArrayList<Double>() ;
+    for (int i = -4 ; i <= 4 ; i++){
+        SmallEncoder.add((SmallEncoderRotations+i)*SmallTurretEncoderRatio*360);
+        BigEncoder.add((BigEncoderRotations+i)*BigTurretEncoderRatio*360);
+    }
+    int BigPointer = 0;
+    int SmallPointer = 0;
+    boolean finished = false;
+    double Small = SmallEncoder.get(SmallPointer);
+    double Big = BigEncoder.get(BigPointer);
+    double FinalAngle = ((Small+Big)/2.0);
+    double FinalError = Math.abs(Big-Small);
+    while (!finished){
+    Small = SmallEncoder.get(SmallPointer);
+    Big = BigEncoder.get(BigPointer);
+    double PossibleAngle = ((Small+Big)/2.0);
+    double PossibleError = Math.abs(Big-Small);
+    if (PossibleError < FinalError){
+    FinalAngle = PossibleAngle;
+    FinalError = PossibleError;
+    }
+    if (BigPointer == BigEncoder.size()-1 && SmallPointer == SmallEncoder.size()-1){
+        finished = true;
+    } else {
+        if (Big < Small){
+            BigPointer++;
+        } else {
+            SmallPointer++;
+        }
+    }
+    RealTurretAngle = FinalAngle;
+    TurretAngleError = FinalError;
+
+
+  }
+}}
