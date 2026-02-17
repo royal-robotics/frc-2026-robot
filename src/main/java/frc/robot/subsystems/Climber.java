@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -15,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase{
+
+    private CANBus canBus = new CANBus("CAN");
    
     private TalonFX ClimberMotor; 
     
@@ -29,7 +32,7 @@ public class Climber extends SubsystemBase{
     private double ClimberManualOverrideValue = 0.0;
 
     public Climber() {
-      ClimberMotor = new TalonFX(14);
+      ClimberMotor = new TalonFX(14, canBus);
         ClimberMotor.getConfigurator().apply (IntakeMotorConfig);
         ClimberMotor.getConfigurator().apply(IntakeCurrentConfig);
         ClimberPositionSignal = ClimberMotor.getPosition();

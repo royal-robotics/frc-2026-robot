@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 //import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -24,6 +25,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Turret extends SubsystemBase{
+
+    private CANBus canBus = new CANBus("CAN");
+
     private TalonFX TurretAngleMotor;
     private TalonFX TurretHoodMotor;
     private TalonFX TurretShooterMotor;
@@ -50,10 +54,10 @@ public class Turret extends SubsystemBase{
     private double TurretHoodOverride = 0.0;
     private double TurretShooterOverride = 0.0;
     public Turret() {
-        TurretAngleMotor = new TalonFX(13);
-        TurretHoodMotor = new TalonFX(10);
-        TurretShooterMotor = new TalonFX(11);
-        TurretShooterFollowerMotor = new TalonFX(12);
+        TurretAngleMotor = new TalonFX(13, canBus);
+        TurretHoodMotor = new TalonFX(10, canBus);
+        TurretShooterMotor = new TalonFX(11, canBus);
+        TurretShooterFollowerMotor = new TalonFX(12,canBus);
 
         TurretAngleMotor.getConfigurator().apply(outfitConfigs);
         TurretHoodMotor.getConfigurator().apply(outfitConfigs);
@@ -67,8 +71,8 @@ public class Turret extends SubsystemBase{
 
         TurretAngleMotor.getConfigurator().apply(slotConfigs);
 
-        TurretAngleSmall = new CANcoder(5);
-        TurretAngleBig = new CANcoder(6);
+        TurretAngleSmall = new CANcoder(5,canBus);
+        TurretAngleBig = new CANcoder(6,canBus);
         TurretAngleSmall.getConfigurator().apply(magnetConfigs);
         TurretAngleBig.getConfigurator().apply(magnetConfigs);
 

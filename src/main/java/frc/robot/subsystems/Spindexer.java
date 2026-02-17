@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 //import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -15,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Spindexer extends SubsystemBase {
+
+    private CANBus canBus = new CANBus("CAN");
 
     private StatusSignal<AngularVelocity> SpindexerVelocity;
     private StatusSignal<AngularVelocity> UptakeVelocity;
@@ -31,8 +34,8 @@ public class Spindexer extends SubsystemBase {
     private double UptakeManualOverrideValue = 0.0;
 
     public Spindexer() {
-        SpindexerMotor = new TalonFX(9);
-        UptakeMotor = new TalonFX(15);
+        SpindexerMotor = new TalonFX(9, canBus);
+        UptakeMotor = new TalonFX(15, canBus);
         SpindexerMotor.getConfigurator().apply(outfitConfigs);
         SpindexerMotor.getConfigurator().apply(limitsConfigs);
         UptakeMotor.getConfigurator().apply(outfitConfigs);

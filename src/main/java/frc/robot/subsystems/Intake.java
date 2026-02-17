@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.CANBus;
 //import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
@@ -11,6 +12,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase{
+
+    private CANBus canBus = new CANBus("CAN");
+
     //motors
     private TalonFX IntakeMotorLift;
     private TalonFX IntakeMotorSpin;
@@ -26,7 +30,7 @@ public class Intake extends SubsystemBase{
 
     //Intake classifier
     public Intake() {
-        IntakeMotorLift = new TalonFX(0);
+        IntakeMotorLift = new TalonFX(0,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
             IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
         
