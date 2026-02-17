@@ -39,6 +39,9 @@ public class Spindexer extends SubsystemBase {
         UptakeMotor.getConfigurator().apply(limitsConfigs);
         SpindexerVelocity = SpindexerMotor.getVelocity();
         UptakeVelocity = UptakeMotor.getVelocity();
+        SmartDashboard.putNumber("UptakeManualOverrideValue", UptakeManualOverrideValue);
+        SmartDashboard.putNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue);
+        SmartDashboard.putBoolean("SpindexerManualOverride", SpindexerManualOverride);
     }
     public void periodic() {
         BaseStatusSignal.refreshAll(SpindexerVelocity,UptakeVelocity);

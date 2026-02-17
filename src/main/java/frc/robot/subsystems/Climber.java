@@ -33,6 +33,8 @@ public class Climber extends SubsystemBase{
         ClimberMotor.getConfigurator().apply (IntakeMotorConfig);
         ClimberMotor.getConfigurator().apply(IntakeCurrentConfig);
         ClimberPositionSignal = ClimberMotor.getPosition();
+        SmartDashboard.putNumber("ClimberManualOverrideValue", ClimberManualOverrideValue);
+        SmartDashboard.putBoolean("ClimberManualOverride", ClimberManualOverride);
   }
 
   public double ClimberPosition() {
