@@ -31,6 +31,8 @@ public class Climber extends SubsystemBase{
     private boolean ClimberManualOverride = false;
     private double ClimberManualOverrideValue = 0.0;
 
+    private double ClimberGearRatio = 25;
+
     public Climber() {
       ClimberMotor = new TalonFX(14, canBus);
         ClimberMotor.getConfigurator().apply (IntakeMotorConfig);
@@ -55,7 +57,7 @@ public class Climber extends SubsystemBase{
   public Command ClimberManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("ClimberManualOverride", ClimberManualOverride)){
-            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverrideValue)));
+            ClimberMotor.setControl(ClimberPosition.withPosition(SmartDashboard.getNumber("ClimberManualOverrideValue", ClimberManualOverrideValue)*ClimberGearRatio));
          }
 
         else {

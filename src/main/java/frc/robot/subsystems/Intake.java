@@ -28,9 +28,12 @@ public class Intake extends SubsystemBase{
     private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs();
     private CANcoder IntakeLiftEncoder;
 
+    private double DeployGearRatio = (34.0/12.0)*(54.0/16.0);
+    private double IntakeGearRatio = 2.0;
+
     //Intake classifier
     public Intake() {
-        IntakeMotorLift = new TalonFX(0,canBus);
+        /*IntakeMotorLift = new TalonFX(0,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
             IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
         
@@ -40,7 +43,7 @@ public class Intake extends SubsystemBase{
             IntakeMotorLift.getConfigurator().apply(IntakePidConfigs);
 
         IntakeLiftEncoder = new CANcoder(0);
-            IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);
+            IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);*/
     }
 
     public void periodic () {

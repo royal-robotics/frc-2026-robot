@@ -33,6 +33,9 @@ public class Spindexer extends SubsystemBase {
     private double SpindexerManualOverrideValue = 0.0;
     private double UptakeManualOverrideValue = 0.0;
 
+    private double SpindexerGearRatio = 6.3; 
+    private double UptakeGearRatio = 34.0/12.0; 
+
     public Spindexer() {
         SpindexerMotor = new TalonFX(9, canBus);
         UptakeMotor = new TalonFX(15, canBus);
@@ -61,7 +64,7 @@ public class Spindexer extends SubsystemBase {
     public Command SpindexerManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("SpindexerManualOverride", SpindexerManualOverride)){
-            SpindexerMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue)));
+            SpindexerMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue)*SpindexerGearRatio));
          }
 
         else {
@@ -74,7 +77,7 @@ public class Spindexer extends SubsystemBase {
    public Command UptakeManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("SpindexerManualOverride", SpindexerManualOverride)){
-            UptakeMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("UptakeManualOverrideValue", UptakeManualOverrideValue)));
+            UptakeMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("UptakeManualOverrideValue", UptakeManualOverrideValue)*UptakeGearRatio));
          }
 
         else {
