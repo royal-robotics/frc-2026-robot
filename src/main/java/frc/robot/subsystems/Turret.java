@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 //import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -16,12 +17,14 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
@@ -29,6 +32,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 @Logged
 public class Turret extends SubsystemBase{
@@ -45,7 +49,7 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
-    private Slot0Configs slotConfigs = new Slot0Configs();
+    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.17107).withKD(0);
     private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-65.039-180));
     private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-73.916-180));
 
@@ -58,6 +62,7 @@ public class Turret extends SubsystemBase{
     private PositionVoltage positionControl = new PositionVoltage(Rotations.of(0.0));
     private VelocityVoltage velocityControl = new VelocityVoltage(RotationsPerSecond.of(0.0));
     private Follower followControl = new Follower(11, MotorAlignmentValue.Aligned);
+    private VoltageOut voltageOut = new VoltageOut(0.0);
 
     private boolean TurretOverride = false;
     private double TurretAngleOverride = 0.0;
@@ -80,6 +85,29 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
+    private final SysIdRoutine ShooterPID = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,        // Use default ramp rate (1 V/s)
+            null, // Reduce dynamic step voltage to 4 V to prevent brownout
+            null,        // Use default timeout (10 s)
+            // Log state with SignalLogger class
+            state -> SignalLogger.writeString("ShooterPID_State", state.toString())
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> TurretShooterMotor.setControl(voltageOut.withOutput(output)),
+            null,
+            this
+        )
+    );
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return ShooterPID.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return ShooterPID.dynamic(direction);
+    }
+
     
     public Turret() {
         TurretAngleMotor = new TalonFX(13, canBus);
@@ -89,15 +117,15 @@ public class Turret extends SubsystemBase{
 
         TurretAngleMotor.getConfigurator().apply(outfitConfigs);
         TurretHoodMotor.getConfigurator().apply(outfitConfigs);
-        TurretShooterMotor.getConfigurator().apply(outfitConfigs);
-        TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs);
+        TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
+        TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
 
         TurretAngleMotor.getConfigurator().apply(limitsConfigs);
         TurretHoodMotor.getConfigurator().apply(limitsConfigs);
         TurretShooterMotor.getConfigurator().apply(limitsConfigs);
         TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs);
 
-        TurretAngleMotor.getConfigurator().apply(slotConfigs);
+        TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
 
         TurretAngleSmall = new CANcoder(5,canBus);
         TurretAngleBig = new CANcoder(6,canBus);
@@ -118,6 +146,8 @@ public class Turret extends SubsystemBase{
         SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
         SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
         SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
+
+        setDefaultCommand(TurretManual());
     }
 
     public double TurretAngle() {
@@ -129,7 +159,7 @@ public class Turret extends SubsystemBase{
     }
 
     public double TurretShooter() {
-        return turretShooterSignal.getValueAsDouble();
+        return turretShooterSignal.getValueAsDouble()*ShooterGearRatio;
     }
 
      public double TurretEncoderBig() {

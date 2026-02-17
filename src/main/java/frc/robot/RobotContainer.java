@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.epilogue.Logged;
@@ -55,8 +56,11 @@ public class RobotContainer {
     public final LED led = new LED();
     public final Vision vision = new Vision();
 
+
     public RobotContainer() {
+        SignalLogger.start();
         configureBindings();
+
     }
 
     private void configureBindings() {
@@ -102,13 +106,19 @@ public class RobotContainer {
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        //driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+       // driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        //driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+       // driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
         driver.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        operator.povUp().whileTrue(turret.sysIdDynamic(Direction.kForward));
+        operator.povDown().whileTrue(turret.sysIdDynamic(Direction.kReverse));
+        operator.povLeft().whileTrue(turret.sysIdQuasistatic(Direction.kForward));
+        operator.povRight().whileTrue(turret.sysIdQuasistatic(Direction.kReverse));
+        operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
 
 
 
