@@ -27,7 +27,7 @@ public class Climber extends SubsystemBase{
 
     private StatusSignal<Angle> ClimberPositionSignal;
 
-    private PositionVoltage ClimberPosition = new PositionVoltage(Degrees.of(0)); //ratio is 1:25
+    private PositionVoltage ClimberPosition = new PositionVoltage(Rotations.of(0)); //ratio is 1:25
     private boolean ClimberManualOverride = false;
     private double ClimberManualOverrideValue = 0.0;
 
@@ -48,7 +48,7 @@ public class Climber extends SubsystemBase{
   }
 
   public double ClimberPosition() {
-    return ClimberPositionSignal.getValueAsDouble();
+    return ClimberPositionSignal.getValueAsDouble()/ClimberDistanceRatio;
   }
 
   /*public Command ClimberUPPP(){
