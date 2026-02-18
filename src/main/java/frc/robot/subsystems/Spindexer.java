@@ -56,11 +56,11 @@ public class Spindexer extends SubsystemBase {
     }
     
     public double SpindexerVelocity() {
-    return SpindexerVelocity.getValueAsDouble();
+    return SpindexerVelocity.getValueAsDouble() / SpindexerGearRatio;
     }
 
     public double UptakeVelocity() {
-    return UptakeVelocity.getValueAsDouble();
+    return UptakeVelocity.getValueAsDouble() / UptakeGearRatio;
     }
 
     public Command Spin(){
@@ -76,11 +76,14 @@ public class Spindexer extends SubsystemBase {
       return run(()->{
         if (SmartDashboard.getBoolean("SpindexerManualOverride", SpindexerManualOverride)){
             SpindexerMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue)*SpindexerGearRatio));
+            UptakeMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("UptakeManualOverrideValue", UptakeManualOverrideValue)*UptakeGearRatio));
          }
 
         else {
             SpindexerManualOverrideValue = SpindexerVelocity();
+            UptakeManualOverrideValue = UptakeVelocity();
             SmartDashboard.putNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue);
+            SmartDashboard.putNumber("UptakeManualOverrideValue", UptakeManualOverrideValue);
          }
       });
   }
@@ -88,7 +91,7 @@ public class Spindexer extends SubsystemBase {
    public Command UptakeManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("SpindexerManualOverride", SpindexerManualOverride)){
-            UptakeMotor.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("UptakeManualOverrideValue", UptakeManualOverrideValue)*UptakeGearRatio));
+
          }
 
         else {
