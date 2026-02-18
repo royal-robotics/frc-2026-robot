@@ -8,10 +8,12 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
+@Logged
 public class Spindexer extends SubsystemBase {
 
     private CANBus canBus = new CANBus("CAN");
@@ -34,6 +37,7 @@ public class Spindexer extends SubsystemBase {
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
     private Slot0Configs SpindexerPIDConfigs = new Slot0Configs().withKS(0.11228).withKV(0.093345).withKA(0.0016982).withKP(0.033478).withKD(0);
+    private Slot0Configs UptakePIDConfigs = new Slot0Configs().withKS(0.065067).withKV(0.11671).withKA(0.0012266).withKP(0.12546).withKD(0);
 
     private boolean SpindexerManualOverride = false;
     private double SpindexerManualOverrideValue = 0.0;
@@ -60,12 +64,28 @@ public class Spindexer extends SubsystemBase {
     );
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return SpindexerPID.quasistatic(direction);
+        return UptakePID.quasistatic(direction);
     }
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return SpindexerPID.dynamic(direction);
+        return UptakePID.dynamic(direction);
     }
+
+    private final SysIdRoutine UptakePID = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,        // Use default ramp rate (1 V/s)
+            null, // Reduce dynamic step voltage to 4 V to prevent brownout
+            null,        // Use default timeout (10 s)
+            // Log state with SignalLogger class
+            state -> SignalLogger.writeString("UptakePID_State", state.toString())
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> UptakeMotor.setControl(voltageOut.withOutput(output)),
+            null,
+            this
+        )
+    );
+
 
     public Spindexer() {
         SpindexerMotor = new TalonFX(9, canBus);
@@ -75,11 +95,13 @@ public class Spindexer extends SubsystemBase {
         SpindexerMotor.getConfigurator().apply(SpindexerPIDConfigs);
         UptakeMotor.getConfigurator().apply(outfitConfigs);
         UptakeMotor.getConfigurator().apply(limitsConfigs);
+        UptakeMotor.getConfigurator().apply(UptakePIDConfigs);
         SpindexerVelocity = SpindexerMotor.getVelocity();
         UptakeVelocity = UptakeMotor.getVelocity();
         SmartDashboard.putNumber("UptakeManualOverrideValue", UptakeManualOverrideValue);
         SmartDashboard.putNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue);
         SmartDashboard.putBoolean("SpindexerManualOverride", SpindexerManualOverride);
+        setDefaultCommand(SpindexerManual());
     }
     public void periodic() {
         BaseStatusSignal.refreshAll(SpindexerVelocity,UptakeVelocity);

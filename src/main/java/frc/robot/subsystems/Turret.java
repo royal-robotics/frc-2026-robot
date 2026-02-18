@@ -49,7 +49,7 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
-    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.17107).withKD(0);
+    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.3).withKD(0); // inital p 0.17107
     private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-65.039-180));
     private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-73.916-180));
 
@@ -84,6 +84,13 @@ public class Turret extends SubsystemBase{
 
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
+
+    private double TurretMin = 0.0;
+    private double TurretMax = 510.0;
+
+    private double HoodMin = 0.0;
+    
+    private double HoodMax = 26.0;
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -155,7 +162,7 @@ public class Turret extends SubsystemBase{
     }
 
     public double TurretHood() {
-        return turretHoodSignal.getValueAsDouble();
+        return turretHoodSignal.getValue().in(Degrees)/HoodGearRatio;
     }
 
     public double TurretShooter() {

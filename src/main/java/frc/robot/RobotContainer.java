@@ -114,10 +114,10 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         driver.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        operator.povUp().whileTrue(spindexer.sysIdDynamic(Direction.kForward));
-        operator.povDown().whileTrue(spindexer.sysIdDynamic(Direction.kReverse));
-        operator.povLeft().whileTrue(spindexer.sysIdQuasistatic(Direction.kForward));
-        operator.povRight().whileTrue(spindexer.sysIdQuasistatic(Direction.kReverse));
+        operator.y().whileTrue(spindexer.sysIdDynamic(Direction.kForward));
+        operator.a().whileTrue(spindexer.sysIdDynamic(Direction.kReverse));
+        operator.x().whileTrue(spindexer.sysIdQuasistatic(Direction.kForward));
+        operator.b().whileTrue(spindexer.sysIdQuasistatic(Direction.kReverse));
         operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
 
 
