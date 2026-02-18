@@ -71,7 +71,7 @@ public class Turret extends SubsystemBase{
 
     private double TurretGearRatio = 46;
     private double HoodGearRatio = (40.0/15.0)*(30.0/18.0)*(197.0/10.0);
-    private double ShooterGearRatio = (32.0/16.0)*(16.0/15.0);
+    private double ShooterGearRatio = (32.0/16.0)*(15.0/16.0);
     private double BigTurretEncoderRatio = 23.0/100.0;
     private double SmallTurretEncoderRatio = 19.0/100.0;
 
@@ -117,8 +117,8 @@ public class Turret extends SubsystemBase{
 
         TurretAngleMotor.getConfigurator().apply(outfitConfigs);
         TurretHoodMotor.getConfigurator().apply(outfitConfigs);
-        TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
-        TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
+        TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
+        TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
 
         TurretAngleMotor.getConfigurator().apply(limitsConfigs);
         TurretHoodMotor.getConfigurator().apply(limitsConfigs);
@@ -159,7 +159,7 @@ public class Turret extends SubsystemBase{
     }
 
     public double TurretShooter() {
-        return turretShooterSignal.getValueAsDouble()*ShooterGearRatio;
+        return turretShooterSignal.getValueAsDouble()/ShooterGearRatio;
     }
 
      public double TurretEncoderBig() {
