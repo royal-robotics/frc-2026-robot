@@ -1,14 +1,25 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
-//import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase{
@@ -19,10 +30,19 @@ public class Intake extends SubsystemBase{
     private TalonFX IntakeMotorLift;
     private TalonFX IntakeMotorSpin;
 
+    private StatusSignal<Angle> LiftSignal;
+    private StatusSignal<AngularVelocity> SpinSignal;
+
+    private PositionVoltage PositionControl = new PositionVoltage(0.0);
+    private VelocityVoltage VelocityControl = new VelocityVoltage(0.0);
+
     //motor configs
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs();
     private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs();
-    private Slot0Configs IntakePidConfigs= new Slot0Configs();
+    private FeedbackConfigs intakeFeedbackConfigs= new FeedbackConfigs().withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder).withFeedbackRemoteSensorID(7);
+    //test values
+    private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKP(0.1).withKD(0);
+    private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKP(0.1).withKD(0);
   
     //CAN configs
     private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs();
@@ -31,22 +51,61 @@ public class Intake extends SubsystemBase{
     private double DeployGearRatio = (34.0/12.0)*(54.0/16.0);
     private double IntakeGearRatio = 2.0;
 
+    private boolean IntakeOverride = false;
+    private double IntakeLiftOverride = 0.0;
+    private double IntakeSpinOverride = 0.0;
+
     //Intake classifier
     public Intake() {
-        /*IntakeMotorLift = new TalonFX(0,canBus);
-            IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
-            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
-        
-        IntakeMotorSpin = new TalonFX(0);
+        IntakeMotorLift = new TalonFX(16,canBus);
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig);
             IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig);
-            IntakeMotorLift.getConfigurator().apply(IntakePidConfigs);
+            IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
+            IntakeMotorLift.getConfigurator().apply(intakeFeedbackConfigs);
+        
+        IntakeMotorSpin = new TalonFX(17,canBus);
+            IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
+            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
+            IntakeMotorSpin.getConfigurator().apply(IntakeSpinPidConfigs);
 
-        IntakeLiftEncoder = new CANcoder(0);
-            IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);*/
+        IntakeLiftEncoder = new CANcoder(7,canBus);
+            IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);
+
+        LiftSignal = IntakeLiftEncoder.getAbsolutePosition();
+        SpinSignal = IntakeMotorSpin.getVelocity();
+
+        SmartDashboard.putBoolean("IntakeOverride", IntakeOverride);
+        SmartDashboard.putNumber("IntakeLiftOverride", IntakeLiftOverride);
+        SmartDashboard.putNumber("IntakeSpinOverride", IntakeSpinOverride);
+
+        setDefaultCommand(IntakeManual());
+    }
+
+    public double IntakeLift() {
+        return LiftSignal.getValue().in(Degrees);
+    }
+
+    public double IntakeSpin() {
+        return SpinSignal.getValueAsDouble()/IntakeGearRatio;
+    }
+
+    public Command IntakeManual() {
+        return run(() -> {
+        if (SmartDashboard.getBoolean("IntakeOverride", IntakeOverride)){
+            IntakeMotorLift.setControl(PositionControl.withPosition(SmartDashboard.getNumber("IntakeLiftOverride", IntakeLiftOverride)));
+            IntakeMotorSpin.setControl(VelocityControl.withVelocity(SmartDashboard.getNumber("IntakeSpinOverride", IntakeSpinOverride)*IntakeGearRatio));
+         }
+
+        else {
+            IntakeLiftOverride = IntakeLift();
+            IntakeSpinOverride = IntakeSpin();
+            SmartDashboard.putNumber("IntakeLiftOverride", IntakeLiftOverride);
+            SmartDashboard.putNumber("IntakeSpinOverride", IntakeSpinOverride);
+         }
+        });
     }
 
     public void periodic () {
-        
+        BaseStatusSignal.refreshAll(LiftSignal, SpinSignal);
     }
 }
