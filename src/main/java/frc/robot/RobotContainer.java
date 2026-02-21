@@ -90,9 +90,9 @@ public class RobotContainer {
 
 
         driver.y().toggleOnTrue(climber.ClimberToggle());
-        //driver.leftBumper().whileTrue(intake.RunIntake());
+        driver.leftBumper().toggleOnTrue(intake.IntakeToggle());
         //driver.leftTrigger().whileTrue(intake.Outtake());
-        driver.rightBumper().whileTrue(Commands.parallel(turret.Shoot(),spindexer.Spin()));
+        driver.rightBumper().whileTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
                 drive.withVelocityX(-driver.getLeftY() * SlowSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-driver.getLeftX() * SlowSpeed) // Drive left with negative X (left)
@@ -114,11 +114,13 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         driver.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        operator.y().whileTrue(spindexer.sysIdDynamic(Direction.kForward));
-        operator.a().whileTrue(spindexer.sysIdDynamic(Direction.kReverse));
-        operator.x().whileTrue(spindexer.sysIdQuasistatic(Direction.kForward));
-        operator.b().whileTrue(spindexer.sysIdQuasistatic(Direction.kReverse));
-        operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
+        //operator.y().whileTrue(spindexer.sysIdDynamic(Direction.kForward));
+        //operator.a().whileTrue(spindexer.sysIdDynamic(Direction.kReverse));
+       // operator.x().whileTrue(spindexer.sysIdQuasistatic(Direction.kForward));
+       // operator.b().whileTrue(spindexer.sysIdQuasistatic(Direction.kReverse));
+        //operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
+        operator.povUp().onTrue(turret.HoodStepUp());
+        operator.povDown().onTrue(turret.HoodStepDown());
 
 
 

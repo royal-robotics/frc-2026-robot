@@ -50,6 +50,7 @@ public class Turret extends SubsystemBase{
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
     private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.3).withKD(0); // inital p 0.17107
+    private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(5.0).withKD(0);
     private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-65.039-180));
     private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-73.916-180));
 
@@ -133,6 +134,7 @@ public class Turret extends SubsystemBase{
         TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs);
 
         TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
+        TurretHoodMotor.getConfigurator().apply(HoodPIDConfigs);
 
         TurretAngleSmall = new CANcoder(5,canBus);
         TurretAngleBig = new CANcoder(6,canBus);
@@ -158,7 +160,7 @@ public class Turret extends SubsystemBase{
     }
 
     public double TurretAngle() {
-        return turretAngleSignal.getValueAsDouble();
+        return turretAngleSignal.getValue().in(Degrees)/TurretAngleRatio;
     }
 
     public double TurretHood() {
@@ -190,11 +192,19 @@ public Command Shoot(){
    // return runOnce(()->TurretAngleMotor.setPosition(MotorTurretAngle));
 //}
 
+public Command HoodStepUp(){
+    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHood()+0.25)))).onlyIf(()->TurretHood()<HoodMax);
+}
+
+public Command HoodStepDown(){
+    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHood()-0.25)))).onlyIf(()->TurretHood()>HoodMin);
+}
+
   public Command TurretManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("TurretManualOverride", TurretOverride)){
-            TurretAngleMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretAngleRatio));
-            TurretHoodMotor.setControl(positionControl.withPosition(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodAngleRatio));
+            TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretAngleRatio)));
+            TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodGearRatio)));
             TurretShooterMotor.setControl(velocityControl.withVelocity(SmartDashboard.getNumber("TurretShooterOverride", TurretShooterOverride)*ShooterGearRatio));
          }
 

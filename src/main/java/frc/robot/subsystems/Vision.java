@@ -22,6 +22,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
@@ -32,12 +34,20 @@ public class Vision extends SubsystemBase {
     private final PhotonCamera backRightCamera = new PhotonCamera("BackRight");
     private final PhotonCamera frontRightCamera = new PhotonCamera("FrontRight");
     private final PhotonCamera frontCamera = new PhotonCamera("Front");
+    
+    private Field2d Field = new Field2d();
 
     private Pose3d frontPose = new Pose3d();
     private Pose3d frontLeftPose = new Pose3d();
     private Pose3d frontRightPose = new Pose3d();
     private Pose3d backLeftPose = new Pose3d();
     private Pose3d backRightPose = new Pose3d();
+
+    private boolean FrontPoseToggle = true;
+    private boolean FrontRightPoseToggle = false;
+    private boolean FrontLeftPoseToggle = false;
+    private boolean BackRightPoseToggle = false;
+    private boolean BackLeftPoseToggle = false;
 
 
     private final AprilTagFieldLayout fieldLayout =
@@ -117,6 +127,12 @@ public class Vision extends SubsystemBase {
              backRightRobotToCamera);
         frontPoseEstimator = new PhotonPoseEstimator(fieldLayout,
              frontRobotToCamera);
+
+        SmartDashboard.putBoolean("FrontPoseToggle", FrontPoseToggle);
+        SmartDashboard.putBoolean("BackLeftPoseToggle", BackLeftPoseToggle);
+        SmartDashboard.putBoolean("BackRightPoseToggle", BackRightPoseToggle);
+        SmartDashboard.putBoolean("FrontLeftPoseToggle", FrontLeftPoseToggle);
+        SmartDashboard.putBoolean("FrontRightPoseToggle", FrontRightPoseToggle);
     }
 
     public void periodic(){
@@ -130,7 +146,7 @@ public class Vision extends SubsystemBase {
         PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
         PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
 
-        if (frontEstimate !=null) {frontPose = frontEstimate.estimatedRobotPose.estimatedPose;}
+        if (frontEstimate !=null) {frontPose = frontEstimate.estimatedRobotPose.estimatedPose;Field.setRobotPose(frontPose.toPose2d());}
         if (frontLeftEstimate !=null) {frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;}
         if (frontRightEstimate !=null) {frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;}
         if (backLeftEstimate !=null) {backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;}

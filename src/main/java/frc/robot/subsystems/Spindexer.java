@@ -43,7 +43,7 @@ public class Spindexer extends SubsystemBase {
     private double SpindexerGearRatio = 6.3; 
     private double UptakeGearRatio = 34.0/12.0; 
 
-    private double SpindexerSpeed = 2.0;
+    private double SpindexerSpeed = 10.0;
 
     private final SysIdRoutine SpindexerPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -113,8 +113,9 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Command Spin(){
-        return run(()->{SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
-        UptakeMotor.setControl(VelocityControl.withVelocity(2*SpindexerSpeed*UptakeGearRatio));});
+        return startEnd(()->{SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
+        UptakeMotor.setControl(VelocityControl.withVelocity(2*SpindexerSpeed*UptakeGearRatio));},()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
+        UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));});
     }
 
     public Command Unjam(){
