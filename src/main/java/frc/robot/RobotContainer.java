@@ -54,7 +54,9 @@ public class RobotContainer {
     public final Spindexer spindexer = new Spindexer();
     public final Turret turret = new Turret();
     public final LED led = new LED();
-    public final Vision vision = new Vision();
+    public final Vision vision = new Vision(turret :: getRobotDistance);
+
+
 
 
     public RobotContainer() {
@@ -90,7 +92,7 @@ public class RobotContainer {
 
 
         driver.y().toggleOnTrue(climber.ClimberToggle());
-        driver.leftBumper().toggleOnTrue(intake.IntakeToggle());
+        driver.leftBumper().toggleOnTrue(intake.IntakeDeploy());
         //driver.leftTrigger().whileTrue(intake.Outtake());
         driver.rightBumper().whileTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
@@ -121,6 +123,8 @@ public class RobotContainer {
         //operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
         operator.povUp().onTrue(turret.HoodStepUp());
         operator.povDown().onTrue(turret.HoodStepDown());
+        operator.povLeft().onTrue(turret.TurretRotateLeft());
+        operator.povRight().onTrue(turret.TurretRotateRight());
 
 
 

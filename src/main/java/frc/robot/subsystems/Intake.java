@@ -51,7 +51,7 @@ public class Intake extends SubsystemBase{
     private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKA(0.001).withKP(0.1).withKD(0);
   
     //CAN configs
-    private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-152.31));
+    private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-154.51));
     private CANcoder IntakeLiftEncoder;
 
     private double DeployGearRatio = (34.0/12.0)*(54.0/16.0);
@@ -66,6 +66,8 @@ public class Intake extends SubsystemBase{
 
     private double IntakeSpinGo = 35.0;
     private double IntakeSpinNo = 0.0;
+
+    private boolean DeployStatus = false;
 
     //Intake classifier
     public Intake() {
@@ -117,10 +119,21 @@ public class Intake extends SubsystemBase{
         });
     }
 
-    public Command IntakeToggle(){
-        return startEnd(()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo*IntakeGearRatio));}, ()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo));});
+    public Command IntakeDeploy(){
+        return runOnce(()->{ 
+            if (DeployStatus == false) {
+            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));DeployStatus = true;
+        }
+            if (DeployStatus == true) {
+            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));DeployStatus = false;
+        }
+    });
     }
 
+    //startEnd(()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));}, ()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));});
+
+    //IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo*IntakeGearRatio));
+    //IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo));
 
     public void periodic () {
         BaseStatusSignal.refreshAll(LiftSignal, SpinSignal);

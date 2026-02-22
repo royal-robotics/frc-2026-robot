@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -15,14 +16,18 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -37,6 +42,8 @@ public class Vision extends SubsystemBase {
     
     private Field2d Field = new Field2d();
 
+    private SendableChooser<String> CameraSelect = new SendableChooser<>();
+
     private Pose3d frontPose = new Pose3d();
     private Pose3d frontLeftPose = new Pose3d();
     private Pose3d frontRightPose = new Pose3d();
@@ -48,6 +55,8 @@ public class Vision extends SubsystemBase {
     private boolean FrontLeftPoseToggle = false;
     private boolean BackRightPoseToggle = false;
     private boolean BackLeftPoseToggle = false;
+
+    private double RobotDistance = 0.0;
 
 
     private final AprilTagFieldLayout fieldLayout =
@@ -115,8 +124,12 @@ public class Vision extends SubsystemBase {
     private final PhotonPoseEstimator frontRightPoseEstimator;
     private final PhotonPoseEstimator frontPoseEstimator;
 
+    private final Translation2d blueGoal = new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84));
+    private final Translation2d redGoal = new Translation2d(Units.inchesToMeters(469.11), Units.inchesToMeters(158.84));
 
-    public Vision() {
+    public Consumer<Double> PassedDistance;
+
+    public Vision(Consumer<Double> DistanceConsumer) {
         frontLeftPoseEstimator = new PhotonPoseEstimator(fieldLayout,
              frontLeftRobotToCamera);
         frontRightPoseEstimator = new PhotonPoseEstimator(fieldLayout,
@@ -133,6 +146,17 @@ public class Vision extends SubsystemBase {
         SmartDashboard.putBoolean("BackRightPoseToggle", BackRightPoseToggle);
         SmartDashboard.putBoolean("FrontLeftPoseToggle", FrontLeftPoseToggle);
         SmartDashboard.putBoolean("FrontRightPoseToggle", FrontRightPoseToggle);
+
+        CameraSelect.setDefaultOption("FrontPose", "FrontPose");
+        CameraSelect.addOption("FrontRightPose", "FrontRightPose");
+        CameraSelect.addOption("FrontLeftPose", "FrontLeftPose");
+        CameraSelect.addOption("BackRightPose", "BackRightPose");
+        CameraSelect.addOption("BackLeftPose", "BackLeftPose");
+
+        SmartDashboard.putData(CameraSelect);
+        SmartDashboard.putData(Field);
+
+        PassedDistance = DistanceConsumer;
     }
 
     public void periodic(){
@@ -146,11 +170,46 @@ public class Vision extends SubsystemBase {
         PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
         PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
 
-        if (frontEstimate !=null) {frontPose = frontEstimate.estimatedRobotPose.estimatedPose;Field.setRobotPose(frontPose.toPose2d());}
-        if (frontLeftEstimate !=null) {frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;}
-        if (frontRightEstimate !=null) {frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;}
-        if (backLeftEstimate !=null) {backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;}
-        if (backRightEstimate !=null) {backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;}
+        if (frontEstimate !=null) {
+            frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("FrontPose")) {
+                Field.setRobotPose(frontPose.toPose2d());
+                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontPose.getTranslation().toTranslation2d()));
+                PassedDistance.accept(RobotDistance);
+            }
+        }
+        if (frontLeftEstimate !=null) {
+            frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("FrontLeftPose")) {
+                Field.setRobotPose(frontLeftPose.toPose2d());
+                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontLeftPose.getTranslation().toTranslation2d()));
+                PassedDistance.accept(RobotDistance);
+            }
+        }
+        if (frontRightEstimate !=null) {
+            frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("FrontRightPose")) {
+                Field.setRobotPose(frontRightPose.toPose2d());
+                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontRightPose.getTranslation().toTranslation2d()));
+                PassedDistance.accept(RobotDistance);
+            }
+        }
+        if (backLeftEstimate !=null) {
+            backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("BackLeftPose")) {
+                Field.setRobotPose(backLeftPose.toPose2d());
+                RobotDistance = Units.metersToInches(blueGoal.getDistance(backLeftPose.getTranslation().toTranslation2d()));
+                PassedDistance.accept(RobotDistance);
+            }
+        }
+        if (backRightEstimate !=null) {
+            backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("BackRightPose")) {
+                Field.setRobotPose(backRightPose.toPose2d());
+                RobotDistance = Units.metersToInches(blueGoal.getDistance(backRightPose.getTranslation().toTranslation2d()));
+                PassedDistance.accept(RobotDistance);
+            }
+        }
 
     }
 

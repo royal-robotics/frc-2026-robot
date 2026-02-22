@@ -49,10 +49,11 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
+    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(10.0).withKD(0);
     private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.3).withKD(0); // inital p 0.17107
-    private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(5.0).withKD(0);
-    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-65.039-180));
-    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-73.916-180));
+    private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0);
+    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-59.94)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
+    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-6.67)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
 
     private StatusSignal<Angle> turretAngleSignal;
     private StatusSignal<Angle> turretHoodSignal;
@@ -70,28 +71,30 @@ public class Turret extends SubsystemBase{
     private double TurretHoodOverride = 0.0;
     private double TurretShooterOverride = 0.0;
 
-    private double TurretGearRatio = 46;
+    private double TurretGearRatio = (56.0/12.0)*(10.0);
     private double HoodGearRatio = (40.0/15.0)*(30.0/18.0)*(197.0/10.0);
-    private double ShooterGearRatio = (32.0/16.0)*(15.0/16.0);
+    private double ShooterGearRatio = (32.0/16.0)*(18.0/36.0)*(16.0/16.0);
     private double BigTurretEncoderRatio = 23.0/100.0;
     private double SmallTurretEncoderRatio = 19.0/100.0;
 
     private double TurretAngleRatio = TurretGearRatio/360.0;
     private double HoodAngleRatio = HoodGearRatio/360.0;
 
-    private double ShooterSpeed = 100;
+    private double ShooterSpeed = 80.0;
     private double IdealHoodAngle = 20.0;
     private double MotorHoodAngle = IdealHoodAngle-12.75;
 
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 0.0;
-    private double TurretMax = 510.0;
+    private double TurretMin = 5.0;
+    private double TurretMax = 400.0;
 
     private double HoodMin = 0.0;
     
     private double HoodMax = 26.0;
+
+    private double CalculatedDistance;
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -123,8 +126,8 @@ public class Turret extends SubsystemBase{
         TurretShooterMotor = new TalonFX(11, canBus);
         TurretShooterFollowerMotor = new TalonFX(12,canBus);
 
-        TurretAngleMotor.getConfigurator().apply(outfitConfigs);
-        TurretHoodMotor.getConfigurator().apply(outfitConfigs);
+        TurretAngleMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
+        TurretHoodMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Brake));
         TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
         TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
 
@@ -135,6 +138,7 @@ public class Turret extends SubsystemBase{
 
         TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
         TurretHoodMotor.getConfigurator().apply(HoodPIDConfigs);
+        TurretAngleMotor.getConfigurator().apply(TurretPIDConfigs);
 
         TurretAngleSmall = new CANcoder(5,canBus);
         TurretAngleBig = new CANcoder(6,canBus);
@@ -148,8 +152,14 @@ public class Turret extends SubsystemBase{
         turretShooterSignal.waitForUpdate(0.02);
         TurretShooterFollowerMotor.setControl(followControl);
 
+        turretHoodSignal.waitForUpdate(0.02);
+        TurretHoodMotor.setPosition(0.0);
+
         turretAngleSmallSignal = TurretAngleSmall.getAbsolutePosition();
         turretAngelBigSignal = TurretAngleBig.getAbsolutePosition();
+
+        GetTurretAngle();
+        TurretAngleMotor.setPosition(Degrees.of(RealTurretAngle*TurretGearRatio));
 
         SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
         SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
@@ -159,8 +169,12 @@ public class Turret extends SubsystemBase{
         setDefaultCommand(TurretManual());
     }
 
+    public void getRobotDistance(double RobotDistace) {
+        CalculatedDistance = RobotDistace;
+    }
+
     public double TurretAngle() {
-        return turretAngleSignal.getValue().in(Degrees)/TurretAngleRatio;
+        return turretAngleSignal.getValue().in(Degrees)/TurretGearRatio;
     }
 
     public double TurretHood() {
@@ -172,11 +186,11 @@ public class Turret extends SubsystemBase{
     }
 
      public double TurretEncoderBig() {
-        return turretAngelBigSignal.getValue().in(Degrees)+180.0;
+        return turretAngelBigSignal.getValue().in(Degrees);
     }
 
      public double TurretEncoderSmall() {
-        return turretAngleSmallSignal.getValue().in(Degrees)+180.0;
+        return turretAngleSmallSignal.getValue().in(Degrees);
     }
 
     public void periodic() {
@@ -185,7 +199,7 @@ public class Turret extends SubsystemBase{
     }
 
 public Command Shoot(){
-    return run(()->TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterSpeed*ShooterGearRatio)));
+    return startEnd(()->TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterSpeed*ShooterGearRatio)),()->TurretShooterMotor.setControl(velocityControl.withVelocity(0.0*ShooterGearRatio)));
 }
 
 //public Command LockPosition(){
@@ -193,30 +207,40 @@ public Command Shoot(){
 //}
 
 public Command HoodStepUp(){
-    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHood()+0.25)))).onlyIf(()->TurretHood()<HoodMax);
+    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of((TurretHood()+0.25)*HoodGearRatio)))).onlyIf(()->TurretHood()<HoodMax);
 }
 
 public Command HoodStepDown(){
-    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHood()-0.25)))).onlyIf(()->TurretHood()>HoodMin);
+    return runOnce(()->TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of((TurretHood()-0.25)*HoodGearRatio)))).onlyIf(()->TurretHood()>HoodMin);
+}
+
+public Command TurretRotateRight(){
+    return runOnce(()->TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of((TurretAngle()-1)*TurretGearRatio)))).onlyIf(()->TurretAngle()>TurretMin);
+}
+
+public Command TurretRotateLeft(){
+    return runOnce(()->TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of((TurretAngle()+1)*TurretGearRatio)))).onlyIf(()->TurretAngle()<TurretMax);
 }
 
   public Command TurretManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("TurretManualOverride", TurretOverride)){
-            TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretAngleRatio)));
+            TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretGearRatio)));
             TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodGearRatio)));
             TurretShooterMotor.setControl(velocityControl.withVelocity(SmartDashboard.getNumber("TurretShooterOverride", TurretShooterOverride)*ShooterGearRatio));
          }
 
         else {
             TurretAngleOverride = TurretAngle();
-            TurretHoodOverride = TurretHood();
-            TurretShooterOverride = TurretShooter();
+            TurretHoodOverride = (TurretHood());//.0855294*CalculatedDistance)-3.42198;
+            TurretShooterOverride = (TurretShooter());//0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
             SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
             SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
             SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
-         }
-      });
+
+            //TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHoodOverride*HoodGearRatio)));
+            //TurretShooterMotor.setControl(velocityControl.withVelocity(TurretShooterOverride*ShooterGearRatio));
+        }});
   }
 
   private void GetTurretAngle(){
