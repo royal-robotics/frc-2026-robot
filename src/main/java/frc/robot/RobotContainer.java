@@ -51,13 +51,13 @@ public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final Turret turret = new Turret();
+    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(turret::getRobotPose);
     public final Climber climber = new Climber();
     public final Intake intake = new Intake();
     public final Spindexer spindexer = new Spindexer();
-    public final Turret turret = new Turret();
     public final LED led = new LED();
-    //public final Vision vision = new Vision(turret :: getRobotDistance);
+    public final Vision vision = new Vision(drivetrain::getVision);
 
     private final SendableChooser<Command> autoChooser;
 
@@ -101,7 +101,7 @@ public class RobotContainer {
         driver.leftBumper().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().whileTrue(intake.SpinIntake());
         
-        driver.rightBumper().whileTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
+        driver.rightBumper().toggleOnTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
                 drive.withVelocityX(-driver.getLeftY() * SlowSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-driver.getLeftX() * SlowSpeed) // Drive left with negative X (left)
@@ -133,6 +133,7 @@ public class RobotContainer {
         operator.povLeft().onTrue(turret.TurretRotateLeft());
         operator.povRight().onTrue(turret.TurretRotateRight());
         operator.leftTrigger().whileTrue(spindexer.Unjam());
+        operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
 
 
 

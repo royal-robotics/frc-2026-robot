@@ -28,6 +28,9 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -95,7 +98,22 @@ public class Turret extends SubsystemBase{
     
     private double HoodMax = 26.0;
 
+    private double ShooterMax = 80.0;
+    private double ShooterMin = 25.0;
+
+    private Pose2d TotalRobotPose;
+
     private double CalculatedDistance;
+    private double CalculatedHood;
+    private double CalculatedShooter;
+
+    private final Translation2d blueGoal = new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84));
+    private final Translation2d redGoal = new Translation2d(Units.inchesToMeters(469.11), Units.inchesToMeters(158.84));
+    private final Translation2d ShooterOffset = new Translation2d(Units.inchesToMeters(4.25),Units.inchesToMeters(-3.5));
+
+    private double RobotAngle;
+    private double VectorAngle;
+    private double CalculatedAngle;
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -170,8 +188,8 @@ public class Turret extends SubsystemBase{
         setDefaultCommand(TurretManual());
     }
 
-    public void getRobotDistance(double RobotDistace) {
-        CalculatedDistance = RobotDistace;
+    public void getRobotPose(Pose2d TheRobotPose) {
+        TotalRobotPose = TheRobotPose;
     }
 
     public double TurretAngle() {
@@ -232,9 +250,7 @@ public Command TurretRotateLeft(){
          }
 
         else {
-            TurretAngleOverride = TurretAngle();
-            TurretHoodOverride = (TurretHood());//.0855294*CalculatedDistance)-3.42198;
-            TurretShooterOverride = (TurretShooter());//0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
+            
             SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
             SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
             SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
@@ -242,6 +258,43 @@ public Command TurretRotateLeft(){
             //TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(TurretHoodOverride*HoodGearRatio)));
             //TurretShooterMotor.setControl(velocityControl.withVelocity(TurretShooterOverride*ShooterGearRatio));
         }});
+  }
+  public Command AutoTarget(){
+    return  runEnd(()->{
+            Translation2d ShooterVector = ShooterOffset.rotateBy(TotalRobotPose.getRotation());
+            Translation2d ShooterPosition = TotalRobotPose.getTranslation().plus(ShooterVector);
+            CalculatedDistance = Units.metersToInches(ShooterPosition.getDistance(redGoal));
+            RobotAngle = TotalRobotPose.getRotation().getDegrees();
+            VectorAngle = (redGoal.minus(ShooterPosition).getAngle().getDegrees());
+            CalculatedAngle = VectorAngle-RobotAngle+178;
+            if (CalculatedAngle < TurretMin){
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle > TurretMax){
+                CalculatedAngle = CalculatedAngle-360;
+            }
+            TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
+            CalculatedHood = (.0855294*CalculatedDistance)-3.42198;
+            if(CalculatedHood < HoodMin){
+                CalculatedHood = HoodMin;
+            }
+            if(CalculatedHood > HoodMax){
+                CalculatedHood = HoodMax;
+            }
+            TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
+            CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
+            if(CalculatedShooter < ShooterMin){
+                CalculatedShooter = ShooterMin;
+            }
+            if(CalculatedShooter > ShooterMax){
+                CalculatedShooter = ShooterMax;
+            }
+            TurretShooterMotor.setControl(velocityControl.withVelocity(CalculatedShooter*ShooterGearRatio));
+        },
+        ()->{
+            TurretShooterMotor.setControl(velocityControl.withVelocity(0.0));
+        }
+        );
   }
 
   private void GetTurretAngle(){

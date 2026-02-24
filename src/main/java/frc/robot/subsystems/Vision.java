@@ -124,12 +124,11 @@ public class Vision extends SubsystemBase {
     private final PhotonPoseEstimator frontRightPoseEstimator;
     private final PhotonPoseEstimator frontPoseEstimator;
 
-    private final Translation2d blueGoal = new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84));
-    private final Translation2d redGoal = new Translation2d(Units.inchesToMeters(469.11), Units.inchesToMeters(158.84));
+   
 
-    public Consumer<Double> PassedDistance;
+    public Consumer<PoseEstimate> PassedDistance;
 
-    public Vision(Consumer<Double> DistanceConsumer) {
+    public Vision(Consumer<PoseEstimate> DistanceConsumer) {
         frontLeftPoseEstimator = new PhotonPoseEstimator(fieldLayout,
              frontLeftRobotToCamera);
         frontRightPoseEstimator = new PhotonPoseEstimator(fieldLayout,
@@ -174,8 +173,7 @@ public class Vision extends SubsystemBase {
             frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontPose")) {
                 Field.setRobotPose(frontPose.toPose2d());
-                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontPose.getTranslation().toTranslation2d()));
-                PassedDistance.accept(RobotDistance);
+                PassedDistance.accept(frontEstimate);
             }
         }
         /*if (frontLeftEstimate !=null) {

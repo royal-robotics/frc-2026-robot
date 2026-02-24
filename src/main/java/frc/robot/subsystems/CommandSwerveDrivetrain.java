@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -55,6 +56,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
     
+    private Consumer<Pose2d> TotalRobotPose;
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -129,8 +131,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param modules               Constants for each specific module
      */
     public CommandSwerveDrivetrain(
+        Consumer<Pose2d> OverallRobotPose,
         SwerveDrivetrainConstants drivetrainConstants,
         SwerveModuleConstants<?, ?, ?>... modules
+        
     ) {
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
@@ -170,7 +174,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // Handle exception as needed
       e.printStackTrace();
     }
-
+    TotalRobotPose = OverallRobotPose;
     // Configure AutoBuilder last
     
     }
@@ -263,6 +267,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_sysIdRoutineToApply.dynamic(direction);
     }
 
+    public void getVision(Vision.PoseEstimate VisionPose){
+        addVisionMeasurement(VisionPose.getEstimatedRobotPose().estimatedPose.toPose2d(), VisionPose.getEstimatedRobotPose().timestampSeconds, VisionPose.getEstimatedStdDev());
+    }
+
     @Override
     public void periodic() {
         /*
@@ -282,6 +290,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        TotalRobotPose.accept(getState().Pose);
     }
 
     private void startSimThread() {
