@@ -28,7 +28,7 @@ public class Climber extends SubsystemBase{
     
     //motor configs
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive);
-    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs();
+    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
     private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(5.0).withKD(0);
 
     private StatusSignal<Angle> ClimberPositionSignal;
@@ -40,8 +40,9 @@ public class Climber extends SubsystemBase{
     private double ClimberGearRatio = 25.0;
     private double ClimberDistanceRatio = ClimberGearRatio/2.36;
     private double ClimberTop = 8.0;
-    private double ClimnberMiddle = 4.0;
+    private double ClimberMiddle = 2.0;
     private double ClimberBottom = 0.0;
+    private double ClimberReset = -2.0;
 
 
     public Climber() {
@@ -53,6 +54,9 @@ public class Climber extends SubsystemBase{
         SmartDashboard.putNumber("ClimberManualOverrideValue", ClimberManualOverrideValue);
         SmartDashboard.putBoolean("ClimberManualOverride", ClimberManualOverride);
         setDefaultCommand(ClimberManual());
+
+        ClimberPositionSignal.waitForUpdate(0.02);
+        ClimberMotor.setPosition(0.0);
   }
 
   public double ClimberPosition() {
@@ -68,7 +72,11 @@ public class Climber extends SubsystemBase{
   }*/
 
   public Command ClimberToggle(){
-    return startEnd(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))),()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberBottom*ClimberDistanceRatio))));
+    return startEnd(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))),()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberMiddle*ClimberDistanceRatio))));
+  }
+
+  public Command ClimberZero(){
+    return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberReset*ClimberDistanceRatio))));
   }
 
   public Command ClimberManual(){

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -38,20 +39,21 @@ public class Intake extends SubsystemBase{
 
     private StatusSignal<Angle> LiftSignal;
     private StatusSignal<AngularVelocity> SpinSignal;
+    private StatusSignal<Angle> MotorLiftSignal;
 
     private PositionVoltage PositionControl = new PositionVoltage(0.0);
     private VelocityVoltage VelocityControl = new VelocityVoltage(0.0);
 
     //motor configs
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive);
-    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs();
-    private FeedbackConfigs intakeFeedbackConfigs= new FeedbackConfigs().withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder).withFeedbackRemoteSensorID(7);
+    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
+    //private FeedbackConfigs intakeFeedbackConfigs= new FeedbackConfigs().withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder).withFeedbackRemoteSensorID(7);
     //test values
     private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0);
     private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKA(0.001).withKP(0.1).withKD(0);
   
     //CAN configs
-    private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-154.51));
+    private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-18.98));
     private CANcoder IntakeLiftEncoder;
 
     private double DeployGearRatio = (34.0/12.0)*(54.0/16.0);
@@ -61,8 +63,8 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 89.0;
-    private double IntakeUp = 0.0;
+    private double IntakeDown = 86.0;
+    private double IntakeUp = 5.0;
 
     private double IntakeSpinGo = 35.0;
     private double IntakeSpinNo = 0.0;
@@ -75,7 +77,7 @@ public class Intake extends SubsystemBase{
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
             IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig);
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
-            IntakeMotorLift.getConfigurator().apply(intakeFeedbackConfigs);
+            //IntakeMotorLift.getConfigurator().apply(intakeFeedbackConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
@@ -86,7 +88,13 @@ public class Intake extends SubsystemBase{
             IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);
 
         LiftSignal = IntakeLiftEncoder.getAbsolutePosition();
+        MotorLiftSignal = IntakeMotorLift.getPosition();
         SpinSignal = IntakeMotorSpin.getVelocity();
+
+        MotorLiftSignal.waitForUpdate(0.02);
+        //IntakeMotorLift.setPosition(Degrees.of(LiftSignal.getValueAsDouble()*DeployGearRatio));
+        IntakeMotorLift.setPosition(0.0);
+        IntakeMotorLift.setControl(PositionControl.withPosition(0.0));
 
         SmartDashboard.putBoolean("IntakeOverride", IntakeOverride);
         SmartDashboard.putNumber("IntakeLiftOverride", IntakeLiftOverride);
@@ -96,6 +104,10 @@ public class Intake extends SubsystemBase{
     }
 
     public double IntakeLift() {
+        return MotorLiftSignal.getValue().in(Degrees);
+    }
+
+    public double IntakeEncoderLift() {
         return LiftSignal.getValue().in(Degrees);
     }
 
@@ -124,10 +136,14 @@ public class Intake extends SubsystemBase{
             if (DeployStatus == false) {
             IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));DeployStatus = true;
         }
-            if (DeployStatus == true) {
+            else {
             IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));DeployStatus = false;
         }
     });
+    }
+
+    public Command SpinIntake(){
+        return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
     }
 
     //startEnd(()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));}, ()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));});
@@ -136,6 +152,6 @@ public class Intake extends SubsystemBase{
     //IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo));
 
     public void periodic () {
-        BaseStatusSignal.refreshAll(LiftSignal, SpinSignal);
+        BaseStatusSignal.refreshAll(LiftSignal, SpinSignal, MotorLiftSignal);
     }
 }

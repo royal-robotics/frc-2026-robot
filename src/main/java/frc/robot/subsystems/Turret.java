@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -48,7 +49,7 @@ public class Turret extends SubsystemBase{
     private CANcoder TurretAngleBig;
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
-    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs();
+    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
     private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(10.0).withKD(0);
     private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.3).withKD(0); // inital p 0.17107
     private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0);
@@ -195,7 +196,7 @@ public class Turret extends SubsystemBase{
 
     public void periodic() {
         BaseStatusSignal.refreshAll(turretAngleSignal, turretHoodSignal, turretShooterSignal,turretAngelBigSignal,turretAngleSmallSignal);
-        GetTurretAngle();
+        //GetTurretAngle();
     }
 
 public Command Shoot(){

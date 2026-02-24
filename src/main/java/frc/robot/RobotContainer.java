@@ -7,11 +7,14 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -54,7 +57,9 @@ public class RobotContainer {
     public final Spindexer spindexer = new Spindexer();
     public final Turret turret = new Turret();
     public final LED led = new LED();
-    public final Vision vision = new Vision(turret :: getRobotDistance);
+    //public final Vision vision = new Vision(turret :: getRobotDistance);
+
+    private final SendableChooser<Command> autoChooser;
 
 
 
@@ -62,7 +67,8 @@ public class RobotContainer {
     public RobotContainer() {
         //SignalLogger.start();
         configureBindings();
-
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("AutoMode", autoChooser);
     }
 
     private void configureBindings() {
@@ -92,8 +98,9 @@ public class RobotContainer {
 
 
         driver.y().toggleOnTrue(climber.ClimberToggle());
-        driver.leftBumper().toggleOnTrue(intake.IntakeDeploy());
-        //driver.leftTrigger().whileTrue(intake.Outtake());
+        driver.leftBumper().onTrue(intake.IntakeDeploy());
+        driver.leftTrigger().whileTrue(intake.SpinIntake());
+        
         driver.rightBumper().whileTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
                 drive.withVelocityX(-driver.getLeftY() * SlowSpeed) // Drive forward with negative Y (forward)
@@ -101,7 +108,7 @@ public class RobotContainer {
                     .withRotationalRate(-driver.getRightX() * SlowAngularRate) // Drive counterclockwise with negative X (left)
                     .withDeadband(SlowSpeed * 0.1).withRotationalDeadband(SlowAngularRate * 0.1) // Add a 10% deadband
             ));
-        driver.a().whileTrue(spindexer.Unjam());
+        //driver.a().whileTrue(spindexer.Unjam());
         //driver.b().toggleOnTrue(turret.LockPosition());
         
         
@@ -125,6 +132,7 @@ public class RobotContainer {
         operator.povDown().onTrue(turret.HoodStepDown());
         operator.povLeft().onTrue(turret.TurretRotateLeft());
         operator.povRight().onTrue(turret.TurretRotateRight());
+        operator.leftTrigger().whileTrue(spindexer.Unjam());
 
 
 
@@ -132,21 +140,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            // Then slowly drive forward (away from us) for 5 seconds.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(0.5)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            )
-            .withTimeout(5.0),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+        return autoChooser.getSelected();
     }
 }
