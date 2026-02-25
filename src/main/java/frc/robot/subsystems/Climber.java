@@ -57,6 +57,7 @@ public class Climber extends SubsystemBase{
 
         ClimberPositionSignal.waitForUpdate(0.02);
         ClimberMotor.setPosition(0.0);
+        ClimberMotor.setControl(ClimberPosition.withPosition(0.0));
   }
 
   public double ClimberPosition() {

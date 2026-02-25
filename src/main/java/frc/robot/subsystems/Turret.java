@@ -282,7 +282,8 @@ public Command TurretRotateLeft(){
                 CalculatedHood = HoodMax;
             }
             TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
-            CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
+            //CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
+            CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+29.81023;
             if(CalculatedShooter < ShooterMin){
                 CalculatedShooter = ShooterMin;
             }

@@ -164,7 +164,7 @@ public class Vision extends SubsystemBase {
 
     public void getEstimatedPose() {
         PoseEstimate frontEstimate = getEstimatedRobotPoseForCamera(frontCamera, frontPoseEstimator);
-        //PoseEstimate frontRightEstimate = getEstimatedRobotPoseForCamera(frontRightCamera, frontRightPoseEstimator);
+        PoseEstimate frontRightEstimate = getEstimatedRobotPoseForCamera(frontRightCamera, frontRightPoseEstimator);
         //PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
         //PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
         //PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
@@ -173,8 +173,8 @@ public class Vision extends SubsystemBase {
             frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontPose")) {
                 Field.setRobotPose(frontPose.toPose2d());
-                PassedDistance.accept(frontEstimate);
             }
+            PassedDistance.accept(frontEstimate);
         }
         /*if (frontLeftEstimate !=null) {
             frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;
@@ -183,16 +183,15 @@ public class Vision extends SubsystemBase {
                 RobotDistance = Units.metersToInches(blueGoal.getDistance(frontLeftPose.getTranslation().toTranslation2d()));
                 PassedDistance.accept(RobotDistance);
             }
-        }
+        }*/
         if (frontRightEstimate !=null) {
             frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontRightPose")) {
                 Field.setRobotPose(frontRightPose.toPose2d());
-                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontRightPose.getTranslation().toTranslation2d()));
-                PassedDistance.accept(RobotDistance);
             }
+            PassedDistance.accept(frontRightEstimate);
         }
-        if (backLeftEstimate !=null) {
+        /*if (backLeftEstimate !=null) {
             backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("BackLeftPose")) {
                 Field.setRobotPose(backLeftPose.toPose2d());

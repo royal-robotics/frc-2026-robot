@@ -99,7 +99,7 @@ public class RobotContainer {
 
         driver.y().toggleOnTrue(climber.ClimberToggle());
         driver.leftBumper().onTrue(intake.IntakeDeploy());
-        driver.leftTrigger().whileTrue(intake.SpinIntake());
+        driver.leftTrigger().toggleOnTrue(intake.SpinIntake());
         
         driver.rightBumper().toggleOnTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
