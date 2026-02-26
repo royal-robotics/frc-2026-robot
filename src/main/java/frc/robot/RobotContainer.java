@@ -13,12 +13,15 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
@@ -28,6 +31,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Turret.Targets;
 import frc.robot.subsystems.LED;
 
 @Logged
@@ -60,6 +64,11 @@ public class RobotContainer {
     public final Vision vision = new Vision(drivetrain::getVision);
 
     private final SendableChooser<Command> autoChooser;
+
+    private Trigger RedTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() <= 11.6);
+    private Trigger BlueTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() >= 5.0);
+
+    private Trigger TrenchHood = new Trigger(()-> (drivetrain.getState().Pose.getX() <= 13.0&& drivetrain.getState().Pose.getX() >= 10.9)||(drivetrain.getState().Pose.getX() <= 5.65&& drivetrain.getState().Pose.getX() >= 3.5));
 
 
 
@@ -135,6 +144,13 @@ public class RobotContainer {
         operator.leftTrigger().whileTrue(spindexer.Unjam());
         operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
 
+        RedTargetSwitch.whileTrue(turret.ChooseTarget(Targets.redAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
+        BlueTargetSwitch.whileTrue(turret.ChooseTarget(Targets.blueAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
+        RedTargetSwitch.onFalse(turret.ChooseTarget(Targets.redGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
+        BlueTargetSwitch.onFalse(turret.ChooseTarget(Targets.blueGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
+
+        TrenchHood.onTrue(turret.TrenchToggle(true));
+        TrenchHood.onFalse(turret.TrenchToggle(false));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

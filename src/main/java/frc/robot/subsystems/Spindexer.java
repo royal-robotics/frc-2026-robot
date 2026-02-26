@@ -34,7 +34,7 @@ public class Spindexer extends SubsystemBase {
     private TalonFX SpindexerMotor;
     private TalonFX UptakeMotor;
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
-    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
+    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(20)).withStatorCurrentLimitEnable(true);
     private Slot0Configs SpindexerPIDConfigs = new Slot0Configs().withKS(0.11228).withKV(0.093345).withKA(0.0016982).withKP(0.033478).withKD(0);
     private Slot0Configs UptakePIDConfigs = new Slot0Configs().withKS(0.065067).withKV(0.11671).withKA(0.0012266).withKP(0.12546).withKD(0);
 
@@ -116,7 +116,7 @@ public class Spindexer extends SubsystemBase {
 
     public Command Spin(){
         return startEnd(()->{SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
-        UptakeMotor.setControl(VelocityControl.withVelocity(2*SpindexerSpeed*UptakeGearRatio));},()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
+        UptakeMotor.setControl(VelocityControl.withVelocity(3*SpindexerSpeed*UptakeGearRatio));},()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
         UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));});
     }
 

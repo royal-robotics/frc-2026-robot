@@ -9,6 +9,7 @@ import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 
 import edu.wpi.first.math.Matrix;
@@ -203,7 +204,7 @@ public class TunerConstants {
      * Creates a CommandSwerveDrivetrain instance.
      * This should only be called once in your robot program,.
      */
-    public static CommandSwerveDrivetrain createDrivetrain(Consumer<Pose2d> OverallRobotPose) {
+    public static CommandSwerveDrivetrain createDrivetrain(Consumer<SwerveDriveState> OverallRobotPose) {
         return new CommandSwerveDrivetrain(
             OverallRobotPose,DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
         );

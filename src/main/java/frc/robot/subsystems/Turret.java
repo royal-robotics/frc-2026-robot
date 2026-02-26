@@ -20,6 +20,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
@@ -53,9 +54,9 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
-    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(10.0).withKD(0);
-    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.3).withKD(0); // inital p 0.17107
-    private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0);
+    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(2.0);
+    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(0.6).withKD(0.0); // inital p 0.17107
+    private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0.0);
     private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-59.94)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
     private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-6.67)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
 
@@ -91,8 +92,8 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 5.0;
-    private double TurretMax = 400.0;
+    private double TurretMin = 40.0;
+    private double TurretMax = 420.0;
 
     private double HoodMin = 0.0;
     
@@ -101,19 +102,33 @@ public class Turret extends SubsystemBase{
     private double ShooterMax = 80.0;
     private double ShooterMin = 25.0;
 
-    private Pose2d TotalRobotPose;
+    private SwerveDriveState TotalRobotPose;
 
     private double CalculatedDistance;
     private double CalculatedHood;
     private double CalculatedShooter;
 
+    private double MovingCalculatedHood;
+    private double MovingCalculatedShooter;
+    private double MovingCalculatedAngle;
+
     private final Translation2d blueGoal = new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84));
     private final Translation2d redGoal = new Translation2d(Units.inchesToMeters(469.11), Units.inchesToMeters(158.84));
+    private final Translation2d redLeft = new Translation2d((14.0),(2.0));
+    private final Translation2d redRight = new Translation2d((14.0),(6.0));
+    private final Translation2d blueLeft = new Translation2d((2.5),(6.0));
+    private final Translation2d blueRight = new Translation2d((2.5),(2.0));
+
     private final Translation2d ShooterOffset = new Translation2d(Units.inchesToMeters(4.25),Units.inchesToMeters(-3.5));
 
     private double RobotAngle;
     private double VectorAngle;
     private double CalculatedAngle;
+
+    private Targets CurrentGoal = Targets.blueGoal;
+
+    private boolean HoodDown = false;
+
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -185,10 +200,10 @@ public class Turret extends SubsystemBase{
         SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
         SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
 
-        setDefaultCommand(TurretManual());
+        setDefaultCommand(AutoTarget());
     }
 
-    public void getRobotPose(Pose2d TheRobotPose) {
+    public void getRobotPose(SwerveDriveState TheRobotPose) {
         TotalRobotPose = TheRobotPose;
     }
 
@@ -259,14 +274,58 @@ public Command TurretRotateLeft(){
             //TurretShooterMotor.setControl(velocityControl.withVelocity(TurretShooterOverride*ShooterGearRatio));
         }});
   }
+
+  public Command ChooseTarget(Targets Target){
+    return runOnce(()->{
+        CurrentGoal = Target;
+    });
+  }
+
+  public Command TrenchToggle(boolean toggle) {
+    return runOnce(()-> HoodDown = toggle);
+  }
+
   public Command AutoTarget(){
     return  runEnd(()->{
-            Translation2d ShooterVector = ShooterOffset.rotateBy(TotalRobotPose.getRotation());
-            Translation2d ShooterPosition = TotalRobotPose.getTranslation().plus(ShooterVector);
-            CalculatedDistance = Units.metersToInches(ShooterPosition.getDistance(redGoal));
-            RobotAngle = TotalRobotPose.getRotation().getDegrees();
-            VectorAngle = (redGoal.minus(ShooterPosition).getAngle().getDegrees());
-            CalculatedAngle = VectorAngle-RobotAngle+178;
+            Pose2d originalPose = TotalRobotPose.Pose;
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.1));
+            Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
+            Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
+            Translation2d CurrentGoalPos = new Translation2d();
+            switch (CurrentGoal) {
+            case redGoal:
+                
+                CurrentGoalPos = redGoal;
+                break;
+            case redAlliance:
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = redRight;
+                } else {
+                    CurrentGoalPos = redLeft;
+                }
+                break;
+
+            case blueGoal:
+                
+                CurrentGoalPos = blueGoal;
+                break;
+            case blueAlliance:
+                
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = blueLeft;
+                } else {
+                    CurrentGoalPos = blueRight;
+                }
+                break;
+        
+            default:
+                break;
+        }
+            Translation2d GoalVector = (CurrentGoalPos.minus(ShooterPosition));
+            Translation2d FinalVector = GoalVector.plus(new Translation2d((TotalRobotPose.Speeds.vxMetersPerSecond)*1.5, (TotalRobotPose.Speeds.vyMetersPerSecond)*1.5));
+            CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
+            RobotAngle = movingPose.getRotation().getDegrees();
+            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+178;
             if (CalculatedAngle < TurretMin){
                 CalculatedAngle = CalculatedAngle+360;
             }
@@ -281,9 +340,12 @@ public Command TurretRotateLeft(){
             if(CalculatedHood > HoodMax){
                 CalculatedHood = HoodMax;
             }
+            if(HoodDown == true){
+                CalculatedHood = 0.0;
+            }
             TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
             //CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
-            CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+29.81023;
+            CalculatedShooter = (0.000700253*CalculatedDistance*CalculatedDistance)-(0.0706505*CalculatedDistance)+31.81023;
             if(CalculatedShooter < ShooterMin){
                 CalculatedShooter = ShooterMin;
             }
@@ -340,4 +402,8 @@ public Command TurretRotateLeft(){
 
 
   }
-}}
+}
+public enum Targets{
+    blueGoal,redGoal,blueAlliance,redAlliance
+}
+}
