@@ -47,6 +47,8 @@ public class Spindexer extends SubsystemBase {
 
     private double SpindexerSpeed = 10.0;
 
+    private boolean SpinGo = true;
+
     private final SysIdRoutine SpindexerPID = new SysIdRoutine(
         new SysIdRoutine.Config(
             null,        // Use default ramp rate (1 V/s)
@@ -114,9 +116,20 @@ public class Spindexer extends SubsystemBase {
     return UptakeVelocity.getValueAsDouble() / UptakeGearRatio;
     }
 
+    public void SpinCheck(boolean Spin) {
+        SpinGo = Spin;
+    }
+
     public Command Spin(){
-        return startEnd(()->{SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
-        UptakeMotor.setControl(VelocityControl.withVelocity(3*SpindexerSpeed*UptakeGearRatio));},()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
+        return runEnd(()->{
+            if (SpinGo) {SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
+                UptakeMotor.setControl(VelocityControl.withVelocity(3*SpindexerSpeed*UptakeGearRatio));}
+            else {
+                SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
+                UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));
+            }
+        },
+        ()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
         UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));});
     }
 

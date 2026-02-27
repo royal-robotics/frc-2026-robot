@@ -68,8 +68,8 @@ public class RobotContainer {
     private Trigger RedTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() <= 11.6);
     private Trigger BlueTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() >= 5.0);
 
-    private Trigger TrenchHood = new Trigger(()-> (drivetrain.getState().Pose.getX() <= 13.0&& drivetrain.getState().Pose.getX() >= 10.9)||(drivetrain.getState().Pose.getX() <= 5.65&& drivetrain.getState().Pose.getX() >= 3.5));
-
+    private Trigger TrenchHood = new Trigger(()-> (drivetrain.getState().Pose.getX() <= 12.8&& drivetrain.getState().Pose.getX() >= 11.1)||(drivetrain.getState().Pose.getX() <= 5.5&& drivetrain.getState().Pose.getX() >= 3.7));
+    private Trigger OnTarget = new Trigger(()-> turret.OnTarget());
 
 
 
@@ -112,9 +112,9 @@ public class RobotContainer {
         
         driver.rightBumper().toggleOnTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
-                drive.withVelocityX(-driver.getLeftY() * SlowSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driver.getLeftX() * SlowSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driver.getRightX() * SlowAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-(driver.getLeftY() * driver.getLeftY() * driver.getLeftY()) * SlowSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-(driver.getLeftX() * driver.getLeftX() * driver.getLeftX()) * SlowSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-(driver.getRightX() * driver.getRightX() * driver.getRightX()) * SlowAngularRate) // Drive counterclockwise with negative X (left)
                     .withDeadband(SlowSpeed * 0.1).withRotationalDeadband(SlowAngularRate * 0.1) // Add a 10% deadband
             ));
         //driver.a().whileTrue(spindexer.Unjam());
@@ -143,6 +143,7 @@ public class RobotContainer {
         operator.povRight().onTrue(turret.TurretRotateRight());
         operator.leftTrigger().whileTrue(spindexer.Unjam());
         operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
+        operator.a().whileTrue(Commands.startEnd(()->turret.SwapTarget(true),()->turret.SwapTarget(false)));
 
         RedTargetSwitch.whileTrue(turret.ChooseTarget(Targets.redAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.whileTrue(turret.ChooseTarget(Targets.blueAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
@@ -151,6 +152,9 @@ public class RobotContainer {
 
         TrenchHood.onTrue(turret.TrenchToggle(true));
         TrenchHood.onFalse(turret.TrenchToggle(false));
+
+        OnTarget.onTrue(Commands.runOnce(()->spindexer.SpinCheck(true)));
+        OnTarget.onFalse(Commands.runOnce(()->spindexer.SpinCheck(false)));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

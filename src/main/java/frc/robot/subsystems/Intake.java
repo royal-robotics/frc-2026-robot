@@ -37,7 +37,7 @@ public class Intake extends SubsystemBase{
     private TalonFX IntakeMotorLift;
     private TalonFX IntakeMotorSpin;
 
-    private StatusSignal<Angle> LiftSignal;
+    //private StatusSignal<Angle> LiftSignal;
     private StatusSignal<AngularVelocity> SpinSignal;
     private StatusSignal<Angle> MotorLiftSignal;
 
@@ -54,7 +54,7 @@ public class Intake extends SubsystemBase{
   
     //CAN configs
     private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-18.98));
-    private CANcoder IntakeLiftEncoder;
+    //private CANcoder IntakeLiftEncoder;
 
     private double DeployGearRatio = (34.0/12.0)*(54.0/16.0);
     private double IntakeGearRatio = 2.0;
@@ -63,8 +63,8 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 86.0;
-    private double IntakeUp = 5.0;
+    private double IntakeDown = 276.0;
+    private double IntakeUp = 15.0;
 
     private double IntakeSpinGo = 35.0;
     private double IntakeSpinNo = 0.0;
@@ -77,17 +77,16 @@ public class Intake extends SubsystemBase{
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
             IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig);
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
-            //IntakeMotorLift.getConfigurator().apply(intakeFeedbackConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
             IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
             IntakeMotorSpin.getConfigurator().apply(IntakeSpinPidConfigs);
 
-        IntakeLiftEncoder = new CANcoder(7,canBus);
-            IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);
+        //IntakeLiftEncoder = new CANcoder(7,canBus);
+            //IntakeLiftEncoder.getConfigurator().apply(IntakeCANMagnetSensor);
 
-        LiftSignal = IntakeLiftEncoder.getAbsolutePosition();
+        //LiftSignal = IntakeLiftEncoder.getAbsolutePosition();
         MotorLiftSignal = IntakeMotorLift.getPosition();
         SpinSignal = IntakeMotorSpin.getVelocity();
 
@@ -104,12 +103,12 @@ public class Intake extends SubsystemBase{
     }
 
     public double IntakeLift() {
-        return MotorLiftSignal.getValue().in(Degrees);
+        return MotorLiftSignal.getValue().in(Degrees)/DeployGearRatio;
     }
 
-    public double IntakeEncoderLift() {
+    /*public double IntakeEncoderLift() {
         return LiftSignal.getValue().in(Degrees);
-    }
+    }*/
 
     public double IntakeSpin() {
         return SpinSignal.getValueAsDouble()/IntakeGearRatio;
@@ -134,10 +133,10 @@ public class Intake extends SubsystemBase{
     public Command IntakeDeploy(){
         return runOnce(()->{ 
             if (DeployStatus == false) {
-            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));DeployStatus = true;
+            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown*DeployGearRatio)));DeployStatus = true;
         }
             else {
-            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));DeployStatus = false;
+            IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp*DeployGearRatio)));DeployStatus = false;
         }
     });
     }
@@ -152,6 +151,6 @@ public class Intake extends SubsystemBase{
     //IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo));
 
     public void periodic () {
-        BaseStatusSignal.refreshAll(LiftSignal, SpinSignal, MotorLiftSignal);
+        BaseStatusSignal.refreshAll(/*LiftSignal,*/ SpinSignal, MotorLiftSignal);
     }
 }

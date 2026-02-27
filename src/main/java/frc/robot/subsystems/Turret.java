@@ -129,6 +129,8 @@ public class Turret extends SubsystemBase{
 
     private boolean HoodDown = false;
 
+    private boolean TargetOveride = false;
+
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -256,6 +258,10 @@ public Command TurretRotateLeft(){
     return runOnce(()->TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of((TurretAngle()+1)*TurretGearRatio)))).onlyIf(()->TurretAngle()<TurretMax);
 }
 
+public void SwapTarget(boolean TargetSwap){
+    TargetOveride = TargetSwap;
+}
+
   public Command TurretManual(){
       return run(()->{
         if (SmartDashboard.getBoolean("TurretManualOverride", TurretOverride)){
@@ -281,6 +287,10 @@ public Command TurretRotateLeft(){
     });
   }
 
+  public boolean OnTarget(){
+    return Math.abs(TurretAngle()-CalculatedAngle) < 30 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
+  }
+
   public Command TrenchToggle(boolean toggle) {
     return runOnce(()-> HoodDown = toggle);
   }
@@ -298,10 +308,18 @@ public Command TurretRotateLeft(){
                 CurrentGoalPos = redGoal;
                 break;
             case redAlliance:
+                if (TargetOveride == false){
                 if (ShooterPosition.getY() >= 4.035) {
                     CurrentGoalPos = redRight;
                 } else {
                     CurrentGoalPos = redLeft;
+                }
+                } else {
+                    if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = redLeft;
+                } else {
+                    CurrentGoalPos = redRight;
+                }
                 }
                 break;
 
@@ -311,10 +329,18 @@ public Command TurretRotateLeft(){
                 break;
             case blueAlliance:
                 
+                if (TargetOveride == false){
                 if (ShooterPosition.getY() >= 4.035) {
                     CurrentGoalPos = blueLeft;
                 } else {
                     CurrentGoalPos = blueRight;
+                }
+                } else {
+                    if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = blueRight;
+                } else {
+                    CurrentGoalPos = blueLeft;
+                }
                 }
                 break;
         
@@ -341,9 +367,11 @@ public Command TurretRotateLeft(){
                 CalculatedHood = HoodMax;
             }
             if(HoodDown == true){
-                CalculatedHood = 0.0;
+                TurretHoodMotor.setControl(positionControl.withPosition(0.0));
             }
-            TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
+            else {
+                TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
+            }
             //CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
             CalculatedShooter = (0.000700253*CalculatedDistance*CalculatedDistance)-(0.0706505*CalculatedDistance)+31.81023;
             if(CalculatedShooter < ShooterMin){
