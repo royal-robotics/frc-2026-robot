@@ -31,6 +31,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -78,7 +79,7 @@ public class Turret extends SubsystemBase{
 
     private double TurretGearRatio = (56.0/12.0)*(10.0);
     private double HoodGearRatio = (40.0/15.0)*(30.0/18.0)*(197.0/10.0);
-    private double ShooterGearRatio = (32.0/16.0)*(18.0/36.0)*(16.0/16.0);
+    private double ShooterGearRatio = (32.0/16.0)*(18.0/36.0)*(16.0/17.0);
     private double BigTurretEncoderRatio = 23.0/100.0;
     private double SmallTurretEncoderRatio = 19.0/100.0;
 
@@ -129,7 +130,11 @@ public class Turret extends SubsystemBase{
 
     private boolean HoodDown = false;
 
-    private boolean TargetOveride = false;
+    private boolean ForceLeft = false;
+    private boolean ForceRight = false;
+
+    private double xSpeeds = 0.0;
+    private double ySpeeds = 0.0;
 
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
@@ -168,7 +173,7 @@ public class Turret extends SubsystemBase{
         TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
 
         TurretAngleMotor.getConfigurator().apply(limitsConfigs);
-        TurretHoodMotor.getConfigurator().apply(limitsConfigs);
+        TurretHoodMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(20)));
         TurretShooterMotor.getConfigurator().apply(limitsConfigs);
         TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs);
 
@@ -258,8 +263,12 @@ public Command TurretRotateLeft(){
     return runOnce(()->TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of((TurretAngle()+1)*TurretGearRatio)))).onlyIf(()->TurretAngle()<TurretMax);
 }
 
-public void SwapTarget(boolean TargetSwap){
-    TargetOveride = TargetSwap;
+public void ForceLeft(boolean Force){
+    ForceLeft = Force;
+}
+
+public void ForceRight(boolean Force){
+    ForceRight = Force;
 }
 
   public Command TurretManual(){
@@ -268,10 +277,64 @@ public void SwapTarget(boolean TargetSwap){
             TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretAngleOverride", TurretAngleOverride)*TurretGearRatio)));
             TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodGearRatio)));
             TurretShooterMotor.setControl(velocityControl.withVelocity(SmartDashboard.getNumber("TurretShooterOverride", TurretShooterOverride)*ShooterGearRatio));
-         }
+            Pose2d originalPose = TotalRobotPose.Pose;
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.15));
+            Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
+            Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
+            Translation2d CurrentGoalPos = new Translation2d();
+            switch (CurrentGoal) {
+            case redGoal:
+                
+                CurrentGoalPos = redGoal;
+                break;
+            case redAlliance:
+                if (ForceLeft){
+                    CurrentGoalPos = redLeft;
+                } else if (ForceRight){
+                    CurrentGoalPos = redRight;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = redRight;
+                } else {
+                    CurrentGoalPos = redLeft;
+                }
+                }
+                break;
+
+            case blueGoal:
+                
+                CurrentGoalPos = blueGoal;
+                break;
+            case blueAlliance:
+                
+                if (ForceLeft){
+                    CurrentGoalPos = blueLeft;
+                } else if (ForceRight){
+                    CurrentGoalPos = blueRight;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = blueLeft;
+                } else {
+                    CurrentGoalPos = blueRight;
+                }
+                }
+                break;
+        
+            default:
+                break;
+        }
+            Translation2d GoalVector = (redLeft.minus(ShooterPosition));
+            ChassisSpeeds FieldSpeeds = (ChassisSpeeds.fromRobotRelativeSpeeds(TotalRobotPose.Speeds,movingPose.getRotation()));
+            xSpeeds = FieldSpeeds.vxMetersPerSecond;
+            ySpeeds = FieldSpeeds.vyMetersPerSecond;
+            Translation2d FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
+            CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
+        }
 
         else {
-            
+            TurretAngleOverride = TurretAngle();
+            TurretHoodOverride = TurretHood();
+            TurretShooterOverride = TurretShooter();
             SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
             SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
             SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
@@ -298,27 +361,31 @@ public void SwapTarget(boolean TargetSwap){
   public Command AutoTarget(){
     return  runEnd(()->{
             Pose2d originalPose = TotalRobotPose.Pose;
-            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.1));
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.2));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
             Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
             Translation2d CurrentGoalPos = new Translation2d();
+            boolean passing = false;
             switch (CurrentGoal) {
             case redGoal:
                 
                 CurrentGoalPos = redGoal;
+                passing = false;
                 break;
             case redAlliance:
-                if (TargetOveride == false){
+                if (ForceLeft){
+                    CurrentGoalPos = redLeft;
+                    passing = true;
+                } else if (ForceRight){
+                    CurrentGoalPos = redRight;
+                    passing = true;
+                } else {
                 if (ShooterPosition.getY() >= 4.035) {
                     CurrentGoalPos = redRight;
+                    passing = true;
                 } else {
                     CurrentGoalPos = redLeft;
-                }
-                } else {
-                    if (ShooterPosition.getY() >= 4.035) {
-                    CurrentGoalPos = redLeft;
-                } else {
-                    CurrentGoalPos = redRight;
+                    passing = true;
                 }
                 }
                 break;
@@ -326,20 +393,23 @@ public void SwapTarget(boolean TargetSwap){
             case blueGoal:
                 
                 CurrentGoalPos = blueGoal;
+                passing = false;
                 break;
             case blueAlliance:
                 
-                if (TargetOveride == false){
+                if (ForceLeft){
+                    CurrentGoalPos = blueLeft;
+                    passing = true;
+                } else if (ForceRight){
+                    CurrentGoalPos = blueRight;
+                    passing = true;
+                } else {
                 if (ShooterPosition.getY() >= 4.035) {
                     CurrentGoalPos = blueLeft;
+                    passing = true;
                 } else {
                     CurrentGoalPos = blueRight;
-                }
-                } else {
-                    if (ShooterPosition.getY() >= 4.035) {
-                    CurrentGoalPos = blueRight;
-                } else {
-                    CurrentGoalPos = blueLeft;
+                    passing = true;
                 }
                 }
                 break;
@@ -348,7 +418,10 @@ public void SwapTarget(boolean TargetSwap){
                 break;
         }
             Translation2d GoalVector = (CurrentGoalPos.minus(ShooterPosition));
-            Translation2d FinalVector = GoalVector.plus(new Translation2d((TotalRobotPose.Speeds.vxMetersPerSecond)*1.5, (TotalRobotPose.Speeds.vyMetersPerSecond)*1.5));
+            ChassisSpeeds FieldSpeeds = (ChassisSpeeds.fromRobotRelativeSpeeds(TotalRobotPose.Speeds,movingPose.getRotation()));
+            xSpeeds = FieldSpeeds.vxMetersPerSecond;
+            ySpeeds = FieldSpeeds.vyMetersPerSecond;
+            Translation2d FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
             CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
             RobotAngle = movingPose.getRotation().getDegrees();
             CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+178;
@@ -359,7 +432,10 @@ public void SwapTarget(boolean TargetSwap){
                 CalculatedAngle = CalculatedAngle-360;
             }
             TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
-            CalculatedHood = (.0855294*CalculatedDistance)-3.42198;
+            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0894187*CalculatedDistance)-3.0199;
+            if (passing == true){
+                CalculatedHood = (0.0000362153*CalculatedDistance*CalculatedDistance)+(0.0195371*CalculatedDistance)+6.2645;
+            }
             if(CalculatedHood < HoodMin){
                 CalculatedHood = HoodMin;
             }
@@ -372,8 +448,10 @@ public void SwapTarget(boolean TargetSwap){
             else {
                 TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
             }
-            //CalculatedShooter = (0.000880253*CalculatedDistance*CalculatedDistance)-(0.0716505*CalculatedDistance)+31.81023;
-            CalculatedShooter = (0.000700253*CalculatedDistance*CalculatedDistance)-(0.0706505*CalculatedDistance)+31.81023;
+            CalculatedShooter = (0.00020637*CalculatedDistance*CalculatedDistance)+(0.0337384*CalculatedDistance)+22.81237;
+            if (passing == true){
+                CalculatedShooter = (-0.000020923*CalculatedDistance*CalculatedDistance)+(0.180864*CalculatedDistance)+3.99586;
+            }
             if(CalculatedShooter < ShooterMin){
                 CalculatedShooter = ShooterMin;
             }

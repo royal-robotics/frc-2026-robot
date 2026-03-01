@@ -45,7 +45,7 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -143,10 +143,12 @@ public class RobotContainer {
         operator.povRight().onTrue(turret.TurretRotateRight());
         operator.leftTrigger().whileTrue(spindexer.Unjam());
         operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
-        operator.a().whileTrue(Commands.startEnd(()->turret.SwapTarget(true),()->turret.SwapTarget(false)));
+        operator.x().whileTrue(Commands.startEnd(()->turret.ForceLeft(true),()->turret.ForceLeft(false)));
+        operator.b().whileTrue(Commands.startEnd(()->turret.ForceRight(true),()->turret.ForceRight(false)));
+        operator.start().onTrue(climber.ClimberZero());
 
-        RedTargetSwitch.whileTrue(turret.ChooseTarget(Targets.redAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
-        BlueTargetSwitch.whileTrue(turret.ChooseTarget(Targets.blueAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
+        RedTargetSwitch.onTrue(turret.ChooseTarget(Targets.redAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
+        BlueTargetSwitch.onTrue(turret.ChooseTarget(Targets.blueAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
         RedTargetSwitch.onFalse(turret.ChooseTarget(Targets.redGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onFalse(turret.ChooseTarget(Targets.blueGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
 
@@ -162,5 +164,14 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
+    }
+
+    public void startGoal(){
+        if (DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red){
+            turret.ChooseTarget(Targets.redGoal);
+        } else {
+            turret.ChooseTarget(Targets.blueGoal);
+        }
+        
     }
 }
