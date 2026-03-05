@@ -75,7 +75,7 @@ public class Intake extends SubsystemBase{
     public Intake() {
         IntakeMotorLift = new TalonFX(16,canBus);
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
-            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig);
+            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(60.0));
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);
@@ -144,6 +144,7 @@ public class Intake extends SubsystemBase{
     public Command SpinIntake(){
         return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
     }
+
 
     //startEnd(()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeDown)));}, ()->{IntakeMotorLift.setControl(PositionControl.withPosition(Degrees.of(IntakeUp)));});
 

@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left T to Center CIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Grab Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Center to Left T DInntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left T to Depot DIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Depot to Climb"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

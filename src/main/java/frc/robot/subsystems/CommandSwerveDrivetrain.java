@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -15,6 +16,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -347,6 +352,91 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
+
+    public Command driveToTower(){
+        if (DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red) {
+            if (getState().Pose.getY() >= 4.325) {
+                 List<Waypoint> frontwaypoints = PathPlannerPath.waypointsFromPoses(
+                        new Pose2d(1.710, 2.869, Rotation2d.fromDegrees(180)),
+                        new Pose2d(1.079, 2.869, Rotation2d.fromDegrees(180))
+                );
+
+                PathConstraints frontconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                
+                PathPlannerPath FrontClimb = new PathPlannerPath(
+                        frontwaypoints,
+                        frontconstraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))
+                );
+
+                FrontClimb.preventFlipping = false;
+                return AutoBuilder.followPath(FrontClimb);
+            } else {
+                // Create a list of waypoints from poses. Each pose represents one waypoint.
+                // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
+                List<Waypoint> backwaypoints = PathPlannerPath.waypointsFromPoses(
+                        new Pose2d(1.070, 5.043, Rotation2d.fromDegrees(180)),
+                        new Pose2d(0.820, 4.812, Rotation2d.fromDegrees(90)),
+                        new Pose2d(1.080, 4.586, Rotation2d.fromDegrees(0))
+                );
+
+                PathConstraints backconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
+
+                // Create the path using the waypoints created above
+                PathPlannerPath BackClimb = new PathPlannerPath(
+                        backwaypoints,
+                        backconstraints,
+                        null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+                );
+
+                // Prevent the path from being flipped if the coordinates are already correct
+                BackClimb.preventFlipping = false;
+                return AutoBuilder.followPath(BackClimb);
+            }
+        } else {
+            if (getState().Pose.getY() >= 3.745) {
+                List<Waypoint> backwaypoints = PathPlannerPath.waypointsFromPoses(
+                        new Pose2d(1.070, 5.043, Rotation2d.fromDegrees(180)),
+                        new Pose2d(0.820, 4.812, Rotation2d.fromDegrees(90)),
+                        new Pose2d(1.080, 4.586, Rotation2d.fromDegrees(0))
+                );
+
+                PathConstraints backconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                
+                PathPlannerPath BackClimb = new PathPlannerPath(
+                        backwaypoints,
+                        backconstraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))
+                );
+
+                BackClimb.preventFlipping = false;
+                return AutoBuilder.followPath(BackClimb);
+            } else {
+                List<Waypoint> frontwaypoints = PathPlannerPath.waypointsFromPoses(
+                        new Pose2d(1.710, 2.869, Rotation2d.fromDegrees(180)),
+                        new Pose2d(1.079, 2.869, Rotation2d.fromDegrees(180))
+                );
+
+                PathConstraints frontconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                
+                PathPlannerPath FrontClimb = new PathPlannerPath(
+                        frontwaypoints,
+                        frontconstraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))
+                );
+
+                FrontClimb.preventFlipping = false;
+                return AutoBuilder.followPath(FrontClimb);
+            }
+        }
+    }
+
+
 
     /**
      * Return the pose at a given timestamp, if the buffer is not empty.

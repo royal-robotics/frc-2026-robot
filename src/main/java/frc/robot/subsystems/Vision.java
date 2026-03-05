@@ -70,7 +70,7 @@ public class Vision extends SubsystemBase {
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-20.0),
             Units.degreesToRadians(155.0)
         ));
     private final Transform3d frontLeftRobotToCamera = new Transform3d(
@@ -81,7 +81,7 @@ public class Vision extends SubsystemBase {
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-20.0),
             Units.degreesToRadians(75.0)
         ));
     private final Transform3d backRightRobotToCamera = new Transform3d(
@@ -92,7 +92,7 @@ public class Vision extends SubsystemBase {
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-20.0),
             Units.degreesToRadians(-135.0)
         ));
     private final Transform3d frontRightRobotToCamera = new Transform3d(
@@ -103,7 +103,7 @@ public class Vision extends SubsystemBase {
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-20.0),
             Units.degreesToRadians(-60.0)
         ));
     private final Transform3d frontRobotToCamera = new Transform3d(
@@ -114,7 +114,7 @@ public class Vision extends SubsystemBase {
         ),
         new Rotation3d(
             Units.degreesToRadians(0.0),
-            Units.degreesToRadians(-30.0),
+            Units.degreesToRadians(-20.0),
             Units.degreesToRadians(-5.0)
         ));
 
@@ -165,9 +165,9 @@ public class Vision extends SubsystemBase {
     public void getEstimatedPose() {
         PoseEstimate frontEstimate = getEstimatedRobotPoseForCamera(frontCamera, frontPoseEstimator);
         PoseEstimate frontRightEstimate = getEstimatedRobotPoseForCamera(frontRightCamera, frontRightPoseEstimator);
-        //PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
-        //PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
-        //PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
+        PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
+        PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
+        PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
 
         if (frontEstimate !=null) {
             frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
@@ -176,14 +176,13 @@ public class Vision extends SubsystemBase {
             }
             PassedDistance.accept(frontEstimate);
         }
-        /*if (frontLeftEstimate !=null) {
+        if (frontLeftEstimate !=null) {
             frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontLeftPose")) {
-                Field.setRobotPose(frontLeftPose.toPose2d());
-                RobotDistance = Units.metersToInches(blueGoal.getDistance(frontLeftPose.getTranslation().toTranslation2d()));
-                PassedDistance.accept(RobotDistance);
+                Field.setRobotPose(frontPose.toPose2d());
             }
-        }*/
+            PassedDistance.accept(frontLeftEstimate);
+        }
         if (frontRightEstimate !=null) {
             frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontRightPose")) {
@@ -191,22 +190,20 @@ public class Vision extends SubsystemBase {
             }
             PassedDistance.accept(frontRightEstimate);
         }
-        /*if (backLeftEstimate !=null) {
+        if (backLeftEstimate !=null) {
             backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("BackLeftPose")) {
-                Field.setRobotPose(backLeftPose.toPose2d());
-                RobotDistance = Units.metersToInches(blueGoal.getDistance(backLeftPose.getTranslation().toTranslation2d()));
-                PassedDistance.accept(RobotDistance);
+                Field.setRobotPose(frontPose.toPose2d());
             }
+            PassedDistance.accept(backLeftEstimate);
         }
         if (backRightEstimate !=null) {
             backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;
-            if (CameraSelect.getSelected().equals("BackRightPose")) {
-                Field.setRobotPose(backRightPose.toPose2d());
-                RobotDistance = Units.metersToInches(blueGoal.getDistance(backRightPose.getTranslation().toTranslation2d()));
-                PassedDistance.accept(RobotDistance);
+            if (CameraSelect.getSelected().equals("backRightPose")) {
+                Field.setRobotPose(frontPose.toPose2d());
             }
-        }*/
+            PassedDistance.accept(backRightEstimate);
+        }
 
     }
 

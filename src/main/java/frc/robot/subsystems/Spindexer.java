@@ -134,7 +134,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Command Unjam(){
-        return runEnd(()->SpindexerMotor.setControl(VelocityControl.withVelocity(-0.25*SpindexerSpeed*SpindexerGearRatio)),()->SpindexerMotor.setControl(VelocityControl.withVelocity(0.0))).withTimeout(0.0625);
+        return runEnd(()->SpindexerMotor.setControl(VelocityControl.withVelocity(-0.5*SpindexerSpeed*SpindexerGearRatio)),()->SpindexerMotor.setControl(VelocityControl.withVelocity(0.0))).withTimeout(0.5);
     }
 
     public Command SpindexerManual(){

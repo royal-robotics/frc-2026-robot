@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -49,6 +50,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    private final SwerveRequest.FieldCentricFacingAngle CalcAngle = new SwerveRequest.FieldCentricFacingAngle();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -75,9 +77,19 @@ public class RobotContainer {
 
     public RobotContainer() {
         //SignalLogger.start();
+        RegisterNamedCommands();
         configureBindings();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("AutoMode", autoChooser);
+    }
+
+    public void RegisterNamedCommands(){
+        NamedCommands.registerCommand("IntakeDeploy", Commands.sequence(intake.IntakeDeploy(),intake.SpinIntake()));
+        NamedCommands.registerCommand("IntakeRetract", intake.IntakeDeploy());
+        NamedCommands.registerCommand("TrenchShootOveride", Commands.sequence(Commands.runOnce(()->turret.TrenchToggle(false)),spindexer.Spin().withTimeout(2.5),Commands.runOnce(()->turret.TrenchToggle(true))));
+        NamedCommands.registerCommand("Shoot", Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.Spin().withTimeout(2.5)));
+        NamedCommands.registerCommand("IntakeSpin", intake.SpinIntake());
+        NamedCommands.registerCommand("ClimbToggle", climber.AutoClimberToggle());
     }
 
     private void configureBindings() {
@@ -109,6 +121,16 @@ public class RobotContainer {
         driver.y().toggleOnTrue(climber.ClimberToggle());
         driver.leftBumper().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().toggleOnTrue(intake.SpinIntake());
+        driver.a().whileTrue(spindexer.Unjam());
+        driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
+        driver.x().whileTrue(drivetrain.applyRequest(()-> {
+            double CalculatingAngle = turret.TurretAngle()-126+turret.CalcAngle();
+            return CalcAngle.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                     .withVelocityY(-driver.getLeftX() * MaxSpeed) 
+                     .withTargetDirection(Rotation2d.fromDegrees(CalculatingAngle));
+        }));
+    
+            
         
         driver.rightBumper().toggleOnTrue(spindexer.Spin()); //Commands.parallel(turret.Shoot(),
         driver.rightTrigger().whileTrue(drivetrain.applyRequest(() -> 
@@ -117,7 +139,8 @@ public class RobotContainer {
                     .withRotationalRate(-(driver.getRightX() * driver.getRightX() * driver.getRightX()) * SlowAngularRate) // Drive counterclockwise with negative X (left)
                     .withDeadband(SlowSpeed * 0.1).withRotationalDeadband(SlowAngularRate * 0.1) // Add a 10% deadband
             ));
-        //driver.a().whileTrue(spindexer.Unjam());
+
+    
         //driver.b().toggleOnTrue(turret.LockPosition());
         
         
@@ -132,28 +155,28 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         driver.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        //operator.y().whileTrue(spindexer.sysIdDynamic(Direction.kForward));
-        //operator.a().whileTrue(spindexer.sysIdDynamic(Direction.kReverse));
-       // operator.x().whileTrue(spindexer.sysIdQuasistatic(Direction.kForward));
-       // operator.b().whileTrue(spindexer.sysIdQuasistatic(Direction.kReverse));
-        //operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
+        /*operator.y().whileTrue(turret.sysIdDynamic(Direction.kForward));
+        operator.a().whileTrue(turret.sysIdDynamic(Direction.kReverse));
+        operator.x().whileTrue(turret.sysIdQuasistatic(Direction.kForward));
+        operator.b().whileTrue(turret.sysIdQuasistatic(Direction.kReverse));
+        operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));*/
         operator.povUp().onTrue(turret.HoodStepUp());
         operator.povDown().onTrue(turret.HoodStepDown());
         operator.povLeft().onTrue(turret.TurretRotateLeft());
         operator.povRight().onTrue(turret.TurretRotateRight());
-        operator.leftTrigger().whileTrue(spindexer.Unjam());
         operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
         operator.x().whileTrue(Commands.startEnd(()->turret.ForceLeft(true),()->turret.ForceLeft(false)));
         operator.b().whileTrue(Commands.startEnd(()->turret.ForceRight(true),()->turret.ForceRight(false)));
         operator.start().onTrue(climber.ClimberZero());
+        operator.y().toggleOnTrue((Commands.startEnd(()->turret.lockTurret(true),()->turret.lockTurret(false))));
 
         RedTargetSwitch.onTrue(turret.ChooseTarget(Targets.redAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onTrue(turret.ChooseTarget(Targets.blueAlliance).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
         RedTargetSwitch.onFalse(turret.ChooseTarget(Targets.redGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onFalse(turret.ChooseTarget(Targets.blueGoal).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
 
-        TrenchHood.onTrue(turret.TrenchToggle(true));
-        TrenchHood.onFalse(turret.TrenchToggle(false));
+        TrenchHood.onTrue(Commands.runOnce(()->turret.TrenchToggle(true)));
+        TrenchHood.onFalse(Commands.runOnce(()->turret.TrenchToggle(false)));
 
         OnTarget.onTrue(Commands.runOnce(()->spindexer.SpinCheck(true)));
         OnTarget.onFalse(Commands.runOnce(()->spindexer.SpinCheck(false)));
@@ -174,4 +197,6 @@ public class RobotContainer {
         }
         
     }
+
+    
 }

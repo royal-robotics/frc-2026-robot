@@ -64,15 +64,19 @@ public class Climber extends SubsystemBase{
     return ClimberPositionSignal.getValueAsDouble()/ClimberDistanceRatio;
   }
 
-  /*public Command ClimberUPPP(){
-      return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Degrees.of(180))));
+  public Command ClimberUp(){
+      return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))));
   }
 
-  public Command ClimberDooooown(){
-      return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Degrees.of(0))));
-  }*/
+  public Command ClimberDown(){
+      return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberBottom*ClimberDistanceRatio))));
+  }
 
   public Command ClimberToggle(){
+    return startEnd(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))),()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberBottom*ClimberDistanceRatio))));
+  }
+
+  public Command AutoClimberToggle(){
     return startEnd(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberTop*ClimberDistanceRatio))),()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberMiddle*ClimberDistanceRatio))));
   }
 
