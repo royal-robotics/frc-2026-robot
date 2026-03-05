@@ -463,7 +463,7 @@ public void ForceRight(boolean Force){
             else {
                 TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
             }
-            CalculatedShooter = (0.00026337*CalculatedDistance*CalculatedDistance)+(0.0337384*CalculatedDistance)+22.81237;
+            CalculatedShooter = (0.00026337*CalculatedDistance*CalculatedDistance)+(0.0357384*CalculatedDistance)+22.81237;
             if (passing == true){
                 CalculatedShooter = (-0.000020923*CalculatedDistance*CalculatedDistance)+(0.180864*CalculatedDistance)+3.99586;
             }

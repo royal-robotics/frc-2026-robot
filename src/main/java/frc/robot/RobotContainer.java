@@ -41,7 +41,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond); // 2 rotations per second max angular velocity
     private double NormalSpeed = MaxSpeed * 0.75; // Normal drive speed is 75% of max speed
     private double NormalAngularRate = MaxAngularRate * 0.75; // Normal rotation rate is 75% of max rotation rate
-    private double SlowSpeed = MaxSpeed * 0.25; // Slow drive speed is 25% of max speed
+    private double SlowSpeed = MaxSpeed * 0.5; // Slow drive speed is 25% of max speed
     private double SlowAngularRate = MaxAngularRate * 0.225; // Slow rotation rate is 22.5% of max rotation rate
 
     /* Setting up bindings for necessary control of the swerve drive platform */
