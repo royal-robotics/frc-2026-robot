@@ -84,12 +84,14 @@ public class RobotContainer {
     }
 
     public void RegisterNamedCommands(){
-        NamedCommands.registerCommand("IntakeDeploy", Commands.sequence(intake.IntakeDeploy(),intake.SpinIntake()));
+        NamedCommands.registerCommand("IntakeDeploy", Commands.sequence(intake.IntakeDeploy(),intake.AutoSpinIntake()));
         NamedCommands.registerCommand("IntakeRetract", intake.IntakeDeploy());
         NamedCommands.registerCommand("TrenchShootOveride", Commands.sequence(Commands.runOnce(()->turret.TrenchToggle(false)),spindexer.Spin().withTimeout(2.5),Commands.runOnce(()->turret.TrenchToggle(true))));
         NamedCommands.registerCommand("Shoot", Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.Spin().withTimeout(2.5)));
+        NamedCommands.registerCommand("ShootOnTheMove",Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.AutoSpin()));
         NamedCommands.registerCommand("IntakeSpin", intake.SpinIntake());
         NamedCommands.registerCommand("ClimbToggle", climber.AutoClimberToggle());
+        NamedCommands.registerCommand("TrenchToggleOn", Commands.runOnce(()->turret.TrenchToggle(true)));
     }
 
     private void configureBindings() {
@@ -124,10 +126,10 @@ public class RobotContainer {
         driver.a().whileTrue(spindexer.Unjam());
         driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
         driver.x().whileTrue(drivetrain.applyRequest(()-> {
-            double CalculatingAngle = turret.TurretAngle()-126+turret.CalcAngle();
+            double CalculatingAngle = (turret.CalcAngle()+180)+126-turret.TurretAngle(); //turret.TurretAngle()-126+
             return CalcAngle.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                      .withVelocityY(-driver.getLeftX() * MaxSpeed) 
-                     .withTargetDirection(Rotation2d.fromDegrees(CalculatingAngle));
+                     .withTargetDirection(Rotation2d.fromDegrees(CalculatingAngle)).withHeadingPID(3.0, 0.0, 0.0);
         }));
     
             

@@ -178,7 +178,7 @@ public class Turret extends SubsystemBase{
 
         TurretAngleMotor.getConfigurator().apply(limitsConfigs);
         TurretHoodMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(20)));
-        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(60)));
+        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(50)));
         TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(60)));
 
         TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
@@ -376,7 +376,7 @@ public void ForceRight(boolean Force){
   public Command AutoTarget(){
     return  runEnd(()->{
             Pose2d originalPose = TotalRobotPose.Pose;
-            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.2));
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.185));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
             Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
             Translation2d CurrentGoalPos = new Translation2d();

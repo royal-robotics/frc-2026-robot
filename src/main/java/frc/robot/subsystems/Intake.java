@@ -63,7 +63,7 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 276.0;
+    private double IntakeDown = 268.0;
     private double IntakeUp = 15.0;
 
     private double IntakeSpinGo = 35.0;
@@ -143,6 +143,10 @@ public class Intake extends SubsystemBase{
 
     public Command SpinIntake(){
         return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+    }
+
+    public Command AutoSpinIntake(){
+        return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)));
     }
 
 

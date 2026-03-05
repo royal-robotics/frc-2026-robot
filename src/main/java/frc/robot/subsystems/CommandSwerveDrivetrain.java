@@ -355,13 +355,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command driveToTower(){
         if (DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red) {
-            if (getState().Pose.getY() >= 4.325) {
+            if (getState().Pose.getY() <= 4.325) {
                  List<Waypoint> frontwaypoints = PathPlannerPath.waypointsFromPoses(
                         new Pose2d(1.710, 2.869, Rotation2d.fromDegrees(180)),
                         new Pose2d(1.079, 2.869, Rotation2d.fromDegrees(180))
                 );
 
-                PathConstraints frontconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                PathConstraints frontconstraints = new PathConstraints(0.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
                 
                 PathPlannerPath FrontClimb = new PathPlannerPath(
                         frontwaypoints,
@@ -381,7 +381,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         new Pose2d(1.080, 4.586, Rotation2d.fromDegrees(0))
                 );
 
-                PathConstraints backconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                PathConstraints backconstraints = new PathConstraints(0.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
                 // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
 
                 // Create the path using the waypoints created above
@@ -404,7 +404,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         new Pose2d(1.080, 4.586, Rotation2d.fromDegrees(0))
                 );
 
-                PathConstraints backconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                PathConstraints backconstraints = new PathConstraints(0.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
                 
                 PathPlannerPath BackClimb = new PathPlannerPath(
                         backwaypoints,
@@ -421,7 +421,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         new Pose2d(1.079, 2.869, Rotation2d.fromDegrees(180))
                 );
 
-                PathConstraints frontconstraints = new PathConstraints(1.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+                PathConstraints frontconstraints = new PathConstraints(0.5, 3.0, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
                 
                 PathPlannerPath FrontClimb = new PathPlannerPath(
                         frontwaypoints,
