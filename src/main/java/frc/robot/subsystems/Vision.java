@@ -58,6 +58,8 @@ public class Vision extends SubsystemBase {
 
     private double RobotDistance = 0.0;
 
+    private boolean EvenLoop = false;
+
 
     private final AprilTagFieldLayout fieldLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -140,11 +142,11 @@ public class Vision extends SubsystemBase {
         frontPoseEstimator = new PhotonPoseEstimator(fieldLayout,
              frontRobotToCamera);
 
-        SmartDashboard.putBoolean("FrontPoseToggle", FrontPoseToggle);
-        SmartDashboard.putBoolean("BackLeftPoseToggle", BackLeftPoseToggle);
-        SmartDashboard.putBoolean("BackRightPoseToggle", BackRightPoseToggle);
-        SmartDashboard.putBoolean("FrontLeftPoseToggle", FrontLeftPoseToggle);
-        SmartDashboard.putBoolean("FrontRightPoseToggle", FrontRightPoseToggle);
+        //SmartDashboard.putBoolean("FrontPoseToggle", FrontPoseToggle);
+        //SmartDashboard.putBoolean("BackLeftPoseToggle", BackLeftPoseToggle);
+        //SmartDashboard.putBoolean("BackRightPoseToggle", BackRightPoseToggle);
+        //SmartDashboard.putBoolean("FrontLeftPoseToggle", FrontLeftPoseToggle);
+        //SmartDashboard.putBoolean("FrontRightPoseToggle", FrontRightPoseToggle);
 
         CameraSelect.setDefaultOption("FrontPose", "FrontPose");
         CameraSelect.addOption("FrontRightPose", "FrontRightPose");
@@ -152,8 +154,8 @@ public class Vision extends SubsystemBase {
         CameraSelect.addOption("BackRightPose", "BackRightPose");
         CameraSelect.addOption("BackLeftPose", "BackLeftPose");
 
-        SmartDashboard.putData(CameraSelect);
-        SmartDashboard.putData(Field);
+        //SmartDashboard.putData(CameraSelect);
+        //SmartDashboard.putData(Field);
 
         PassedDistance = DistanceConsumer;
     }
@@ -163,48 +165,52 @@ public class Vision extends SubsystemBase {
     }
 
     public void getEstimatedPose() {
+        if (EvenLoop == true){
         PoseEstimate frontEstimate = getEstimatedRobotPoseForCamera(frontCamera, frontPoseEstimator);
         PoseEstimate frontRightEstimate = getEstimatedRobotPoseForCamera(frontRightCamera, frontRightPoseEstimator);
-        PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
-        PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
-        PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
-
         if (frontEstimate !=null) {
-            frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
+            /*frontPose = frontEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontPose")) {
                 Field.setRobotPose(frontPose.toPose2d());
-            }
+            }*/
             PassedDistance.accept(frontEstimate);
         }
-        if (frontLeftEstimate !=null) {
-            frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;
-            if (CameraSelect.getSelected().equals("FrontLeftPose")) {
-                Field.setRobotPose(frontPose.toPose2d());
-            }
-            PassedDistance.accept(frontLeftEstimate);
-        }
         if (frontRightEstimate !=null) {
-            frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;
+            /*frontRightPose = frontRightEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("FrontRightPose")) {
                 Field.setRobotPose(frontRightPose.toPose2d());
-            }
+            }*/
             PassedDistance.accept(frontRightEstimate);
         }
-        if (backLeftEstimate !=null) {
+    }
+        else {
+        PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
+        //PoseEstimate backLeftEstimate = getEstimatedRobotPoseForCamera(backLeftCamera, backLeftPoseEstimator);
+        PoseEstimate backRightEstimate = getEstimatedRobotPoseForCamera(backRightCamera, backRightPoseEstimator);
+
+        if (frontLeftEstimate !=null) {
+            /*frontLeftPose = frontLeftEstimate.estimatedRobotPose.estimatedPose;
+            if (CameraSelect.getSelected().equals("FrontLeftPose")) {
+                Field.setRobotPose(frontPose.toPose2d());
+            }*/
+            PassedDistance.accept(frontLeftEstimate);
+        }
+        
+        /*if (backLeftEstimate !=null) {
             backLeftPose = backLeftEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("BackLeftPose")) {
                 Field.setRobotPose(frontPose.toPose2d());
             }
             PassedDistance.accept(backLeftEstimate);
-        }
+        }*/
         if (backRightEstimate !=null) {
-            backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;
+            /*backRightPose = backRightEstimate.estimatedRobotPose.estimatedPose;
             if (CameraSelect.getSelected().equals("backRightPose")) {
                 Field.setRobotPose(frontPose.toPose2d());
-            }
+            }*/
             PassedDistance.accept(backRightEstimate);
         }
-
+    }
     }
 
     private PoseEstimate getEstimatedRobotPoseForCamera(PhotonCamera camera, PhotonPoseEstimator poseEstimator) {

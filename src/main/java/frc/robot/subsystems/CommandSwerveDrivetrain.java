@@ -184,7 +184,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       e.printStackTrace();
     }
     TotalRobotPose = OverallRobotPose;
-    SmartDashboard.putData("RealField",Field);
+    //SmartDashboard.putData("RealField",Field);
     // Configure AutoBuilder last
     
     }
@@ -301,7 +301,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
         TotalRobotPose.accept(getState());
-        Field.setRobotPose(getState().Pose);
+        //Field.setRobotPose(getState().Pose);
     }
 
     private void startSimThread() {

@@ -45,7 +45,7 @@ public class Spindexer extends SubsystemBase {
     private double SpindexerGearRatio = 6.3; 
     private double UptakeGearRatio = 34.0/12.0; 
 
-    private double SpindexerSpeed = 10.0;
+    private double SpindexerSpeed = 15.0;
 
     private boolean SpinGo = true;
 
@@ -99,10 +99,11 @@ public class Spindexer extends SubsystemBase {
         UptakeMotor.getConfigurator().apply(UptakePIDConfigs);
         SpindexerVelocity = SpindexerMotor.getVelocity();
         UptakeVelocity = UptakeMotor.getVelocity();
-        SmartDashboard.putNumber("UptakeManualOverrideValue", UptakeManualOverrideValue);
-        SmartDashboard.putNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue);
-        SmartDashboard.putBoolean("SpindexerManualOverride", SpindexerManualOverride);
-        setDefaultCommand(SpindexerManual());
+        //SmartDashboard.putNumber("UptakeManualOverrideValue", UptakeManualOverrideValue);
+        //SmartDashboard.putNumber("SpindexerManualOverrideValue", SpindexerManualOverrideValue);
+        //SmartDashboard.putBoolean("SpindexerManualOverride", SpindexerManualOverride);
+        //setDefaultCommand(SpindexerManual());
+        setDefaultCommand(idle());
     }
     public void periodic() {
         BaseStatusSignal.refreshAll(SpindexerVelocity,UptakeVelocity);

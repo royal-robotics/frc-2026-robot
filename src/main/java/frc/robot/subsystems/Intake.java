@@ -95,11 +95,12 @@ public class Intake extends SubsystemBase{
         IntakeMotorLift.setPosition(0.0);
         IntakeMotorLift.setControl(PositionControl.withPosition(0.0));
 
-        SmartDashboard.putBoolean("IntakeOverride", IntakeOverride);
-        SmartDashboard.putNumber("IntakeLiftOverride", IntakeLiftOverride);
-        SmartDashboard.putNumber("IntakeSpinOverride", IntakeSpinOverride);
+        //SmartDashboard.putBoolean("IntakeOverride", IntakeOverride);
+        //SmartDashboard.putNumber("IntakeLiftOverride", IntakeLiftOverride);
+        //SmartDashboard.putNumber("IntakeSpinOverride", IntakeSpinOverride);
 
-        setDefaultCommand(IntakeManual());
+        //setDefaultCommand(IntakeManual());
+        setDefaultCommand(idle());
     }
 
     public double IntakeLift() {

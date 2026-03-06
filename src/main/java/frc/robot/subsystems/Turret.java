@@ -120,7 +120,7 @@ public class Turret extends SubsystemBase{
     private final Translation2d blueLeft = new Translation2d((2.5),(6.0));
     private final Translation2d blueRight = new Translation2d((2.5),(2.0));
 
-    private Translation2d FinalVector = new Translation2d();
+    private Translation2d FinalVector = new Translation2d(1.0, 0.0);
 
     private final Translation2d ShooterOffset = new Translation2d(Units.inchesToMeters(4.25),Units.inchesToMeters(-3.5));
 
@@ -139,6 +139,9 @@ public class Turret extends SubsystemBase{
 
     private double xSpeeds = 0.0;
     private double ySpeeds = 0.0;
+
+    private boolean Idle = true;
+    private double ShooterIdle = 20.0;
 
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
@@ -206,10 +209,10 @@ public class Turret extends SubsystemBase{
         GetTurretAngle();
         TurretAngleMotor.setPosition(Degrees.of(RealTurretAngle*TurretGearRatio));
 
-        SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
-        SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
-        SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
-        SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
+        //SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
+        //SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
+        //SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
+        //SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
 
         setDefaultCommand(AutoTarget());
         //setDefaultCommand(TurretManual());
@@ -349,14 +352,12 @@ public void ForceRight(boolean Force){
         }});
   }
 
-  public Command ChooseTarget(Targets Target){
-    return runOnce(()->{
+  public void ChooseTarget(Targets Target){
         CurrentGoal = Target;
-    });
   }
 
   public boolean OnTarget(){
-    return Math.abs(TurretAngle()-CalculatedAngle) < 30 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
+    return Math.abs(TurretAngle()-CalculatedAngle) < 20 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
   }
 
   public void TrenchToggle(boolean toggle) {
@@ -369,6 +370,10 @@ public void ForceRight(boolean Force){
 
   public double CalcAngle(){
     return FinalVector.getAngle().getDegrees();
+  }
+
+  public void ShooterIdleCheck(boolean toggle){
+    Idle = toggle;
   }
 
 
@@ -472,6 +477,9 @@ public void ForceRight(boolean Force){
             }
             if(CalculatedShooter > ShooterMax){
                 CalculatedShooter = ShooterMax;
+            }
+            if(Idle == true){
+                CalculatedShooter = ShooterIdle;
             }
             TurretShooterMotor.setControl(velocityControl.withVelocity(CalculatedShooter*ShooterGearRatio));
         },
