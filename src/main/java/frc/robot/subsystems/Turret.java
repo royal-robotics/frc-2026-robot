@@ -179,10 +179,10 @@ public class Turret extends SubsystemBase{
         TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
         TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
 
-        TurretAngleMotor.getConfigurator().apply(limitsConfigs);
+        TurretAngleMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
         TurretHoodMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(20)));
-        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(50)));
-        TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(60)));
+        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
+        TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
 
         TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
         TurretHoodMotor.getConfigurator().apply(HoodPIDConfigs);

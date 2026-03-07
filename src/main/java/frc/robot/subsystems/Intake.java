@@ -75,12 +75,12 @@ public class Intake extends SubsystemBase{
     public Intake() {
         IntakeMotorLift = new TalonFX(16,canBus);
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
-            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(60.0));
+            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(15.0));
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
-            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig);
+            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(60.0)));
             IntakeMotorSpin.getConfigurator().apply(IntakeSpinPidConfigs);
 
         //IntakeLiftEncoder = new CANcoder(7,canBus);
@@ -146,8 +146,16 @@ public class Intake extends SubsystemBase{
         return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
     }
 
+    public Command SpinIntakeOut(){
+        return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(-IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+    }
+
     public Command AutoSpinIntake(){
         return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)));
+    }
+
+    public Command AutoSpinIntakeStop(){
+        return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
     }
 
 

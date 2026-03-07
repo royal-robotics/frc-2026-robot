@@ -33,6 +33,12 @@
           "data": {
             "pathName": "Depot to Climb"
           }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0
+          }
         }
       ]
     }

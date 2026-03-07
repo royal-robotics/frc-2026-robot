@@ -89,9 +89,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("TrenchShootOveride", Commands.sequence(Commands.runOnce(()->turret.TrenchToggle(false)),spindexer.Spin().withTimeout(2.5),Commands.runOnce(()->turret.TrenchToggle(true))));
         NamedCommands.registerCommand("Shoot", Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.Spin().withTimeout(2.5)));
         NamedCommands.registerCommand("ShootOnTheMove",Commands.sequence(Commands.runOnce(()->turret.ShooterIdleCheck(false)), Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.AutoSpin()));
-        NamedCommands.registerCommand("IntakeSpin", intake.SpinIntake());
+        NamedCommands.registerCommand("IntakeSpin", intake.AutoSpinIntake());
         NamedCommands.registerCommand("ClimbToggle", climber.AutoClimberToggle());
         NamedCommands.registerCommand("TrenchToggleOn", Commands.runOnce(()->turret.TrenchToggle(true)));
+        NamedCommands.registerCommand("EndSpins",Commands.sequence(intake.AutoSpinIntakeStop(),spindexer.NoSpin()));
     }
 
     private void configureBindings() {
@@ -124,7 +125,8 @@ public class RobotContainer {
         driver.leftBumper().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().toggleOnTrue(intake.SpinIntake());
         driver.a().whileTrue(spindexer.Unjam());
-        driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
+        driver.b().whileTrue(intake.SpinIntakeOut());
+        //driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
         driver.x().whileTrue(drivetrain.applyRequest(()-> {
             double CalculatingAngle = (turret.CalcAngle()+180)+126-turret.TurretAngle(); //turret.TurretAngle()-126+
             return CalcAngle.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
@@ -173,6 +175,7 @@ public class RobotContainer {
         operator.b().whileTrue(Commands.startEnd(()->turret.ForceRight(true),()->turret.ForceRight(false)));
         operator.start().onTrue(climber.ClimberZero());
         operator.y().toggleOnTrue((Commands.startEnd(()->turret.lockTurret(true),()->turret.lockTurret(false))));
+        operator.back().whileTrue(climber.ClimberReset());
 
         RedTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.redAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
@@ -197,7 +200,7 @@ public class RobotContainer {
         if (DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red){
             turret.ChooseTarget(Targets.redGoal);
         } else {
-            turret.ChooseTarget(Targets.redGoal);
+            turret.ChooseTarget(Targets.blueGoal);
         }
         
     }

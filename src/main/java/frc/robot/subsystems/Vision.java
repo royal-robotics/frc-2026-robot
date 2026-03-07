@@ -182,6 +182,7 @@ public class Vision extends SubsystemBase {
             }*/
             PassedDistance.accept(frontRightEstimate);
         }
+        EvenLoop = false;
     }
         else {
         PoseEstimate frontLeftEstimate = getEstimatedRobotPoseForCamera(frontLeftCamera, frontLeftPoseEstimator);
@@ -210,6 +211,7 @@ public class Vision extends SubsystemBase {
             }*/
             PassedDistance.accept(backRightEstimate);
         }
+        EvenLoop = true;
     }
     }
 

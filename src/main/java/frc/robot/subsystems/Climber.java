@@ -12,11 +12,13 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
@@ -28,12 +30,13 @@ public class Climber extends SubsystemBase{
     
     //motor configs
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive);
-    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
-    private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(5.0).withKD(0);
+    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(60)).withStatorCurrentLimitEnable(true);
+    private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(15.0).withKD(0);
 
     private StatusSignal<Angle> ClimberPositionSignal;
 
     private PositionVoltage ClimberPosition = new PositionVoltage(Rotations.of(0)); //ratio is 1:25
+    private VoltageOut ClimbReset = new VoltageOut(0.0);
     private boolean ClimberManualOverride = false;
     private double ClimberManualOverrideValue = 0.0;
 
@@ -41,7 +44,7 @@ public class Climber extends SubsystemBase{
     private double ClimberDistanceRatio = ClimberGearRatio/2.36;
     private double ClimberTop = 8.0;
     private double ClimberMiddle = 2.0;
-    private double ClimberBottom = 0.0;
+    private double ClimberBottom = 0.1;
     private double ClimberReset = -2.0;
 
 
@@ -83,6 +86,13 @@ public class Climber extends SubsystemBase{
 
   public Command ClimberZero(){
     return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberReset*ClimberDistanceRatio))));
+  }
+
+  public Command ClimberReset(){
+    return startEnd(()-> {ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of((ClimberReset-3)*ClimberDistanceRatio)));},
+      ()->{ClimberMotor.setControl(ClimbReset);
+        ClimberMotor.setPosition(0.0);
+      });
   }
 
   public Command ClimberManual(){
