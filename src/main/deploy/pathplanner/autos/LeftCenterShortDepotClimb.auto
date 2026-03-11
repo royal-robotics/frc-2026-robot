@@ -63,6 +63,18 @@
                       }
                     },
                     {
+                      "type": "named",
+                      "data": {
+                        "name": "IntakeDeploy"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "IntakeDeploy"
+                      }
+                    },
+                    {
                       "type": "path",
                       "data": {
                         "pathName": "GoDepotClimbLeftT"
@@ -72,18 +84,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "EndSpins"
           }
         }
       ]

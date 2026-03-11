@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.605428571428571,
-        "y": 7.355267857142857
+        "x": 0.595384615384615,
+        "y": 0.6195527728085859
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8238214285714283,
-        "y": 7.144714285714286
+        "x": 1.595384615384615,
+        "y": 0.6195527728085859
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.07,
-        "y": 5.043
+        "x": 2.0069946332737025,
+        "y": 2.6477280858676204
       },
       "prevControl": {
-        "x": 2.2233333333333345,
-        "y": 5.043
+        "x": 2.148415989511013,
+        "y": 1.6577785922064572
       },
       "nextControl": {
-        "x": 0.7589062500000001,
-        "y": 5.043
+        "x": 1.9716392942143748,
+        "y": 2.895215459282912
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.2119499105545615,
-        "y": 4.611001788908765
+        "x": 0.9523434704830049,
+        "y": 2.939785330948122
       },
       "prevControl": {
-        "x": 0.352003577817531,
-        "y": 4.546100178890876
+        "x": 1.909642218246869,
+        "y": 2.9073345259391776
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,17 +46,17 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.44919786096256736,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.8983957219251347,
+      "rotationDegrees": 179.70559873380628
     }
   ],
   "constraintZones": [
     {
-      "name": "Climb Approach",
-      "minWaypointRelativePos": 0.9970149253731311,
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.0,
       "maxWaypointRelativePos": 2.0,
       "constraints": {
-        "maxVelocity": 0.5,
+        "maxVelocity": 1.0,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -69,7 +69,7 @@
   "eventMarkers": [
     {
       "name": "ClimbUp",
-      "waypointRelativePos": 0.13731343283582095,
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -90,13 +90,13 @@
       }
     },
     {
-      "name": "ShootClimbLeft",
+      "name": "ShootClimbRight",
       "waypointRelativePos": 2.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "ShootClimbLeft"
+          "name": "ShootClimbRight"
         }
       }
     }
@@ -111,13 +111,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 179.19307054489764
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -179.1098552331851
+    "velocity": 0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

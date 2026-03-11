@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 @Logged
 public class Robot extends TimedRobot {
@@ -69,6 +70,7 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
         m_robotContainer.startGoal();
+        CommandScheduler.getInstance().schedule(Commands.sequence(Commands.runOnce(()->m_robotContainer.turret.ClimbAngleOff())),(Commands.runOnce(()->m_robotContainer.turret.AutoReset())),m_robotContainer.spindexer.NoSpin(),m_robotContainer.intake.AutoSpinIntakeStop(),m_robotContainer.led.Purple());
     }
 
     @Override

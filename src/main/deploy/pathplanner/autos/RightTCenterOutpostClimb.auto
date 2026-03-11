@@ -7,25 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftCenterBackRepeatShort"
+            "pathName": "RightTCenterShortOutpost"
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "TrenchShootOveride"
+            "waitTime": 6.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftCenterBackRepeatLong"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "TrenchShootOveride"
+            "pathName": "OutpostToClimb"
           }
         }
       ]

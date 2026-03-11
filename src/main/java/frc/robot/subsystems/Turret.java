@@ -56,10 +56,10 @@ public class Turret extends SubsystemBase{
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
     private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(2.0);
-    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.0).withKV(0.11949).withKA(0.031965).withKP(2.4).withKD(0.0);
+    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.0).withKV(0.11949).withKA(0.031965).withKP(2.0).withKD(0.0);
     private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0.0);
-    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-59.06)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
-    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-350.41)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
+    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-255.49)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
+    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-277.3)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
 
     private StatusSignal<Angle> turretAngleSignal;
     private StatusSignal<Angle> turretHoodSignal;
@@ -93,8 +93,8 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 5.0;
-    private double TurretMax = 370.0;
+    private double TurretMin = 30.0;
+    private double TurretMax = 480.0;
 
     private double HoodMin = 0.0;
     
@@ -119,6 +119,10 @@ public class Turret extends SubsystemBase{
     private final Translation2d redRight = new Translation2d((14.0),(6.0));
     private final Translation2d blueLeft = new Translation2d((2.5),(6.0));
     private final Translation2d blueRight = new Translation2d((2.5),(2.0));
+    private final Translation2d blueStealRight = new Translation2d((6.0),(1.5));
+    private final Translation2d blueStealLeft = new Translation2d((6.0),(6.5));
+    private final Translation2d redStealLeft = new Translation2d((10.5),(1.5));
+    private final Translation2d redStealRight = new Translation2d((10.5),(6.5));
 
     private Translation2d FinalVector = new Translation2d(1.0, 0.0);
 
@@ -142,6 +146,9 @@ public class Turret extends SubsystemBase{
 
     private boolean Idle = true;
     private double ShooterIdle = 20.0;
+
+    private boolean ClimbRight = false;
+    private boolean ClimbLeft = false;
 
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
@@ -357,7 +364,7 @@ public void ForceRight(boolean Force){
   }
 
   public boolean OnTarget(){
-    return Math.abs(TurretAngle()-CalculatedAngle) < 20 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
+    return Math.abs(TurretAngle()-CalculatedAngle) < 10 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
   }
 
   public void TrenchToggle(boolean toggle) {
@@ -376,12 +383,30 @@ public void ForceRight(boolean Force){
     Idle = toggle;
   }
 
+  public void ClimbOnLeft(boolean toggle){
+    ClimbLeft = toggle;
+  }
+
+  public void ClimbOnRight(boolean toggle){
+    ClimbRight = toggle;
+  }
+
+  public void ClimbAngleOff(){
+    ClimbRight= false;
+    ClimbLeft = false;
+  }
+
+  public void AutoReset(){
+    ForceLeft = false;
+    ForceRight = false;
+  }
+
 
 
   public Command AutoTarget(){
     return  runEnd(()->{
             Pose2d originalPose = TotalRobotPose.Pose;
-            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.185));
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.175));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
             Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
             Translation2d CurrentGoalPos = new Translation2d();
@@ -410,6 +435,24 @@ public void ForceRight(boolean Force){
                 }
                 break;
 
+            case redAllianceSteal:
+                if (ForceLeft){
+                    CurrentGoalPos = redStealLeft;
+                    passing = true;
+                } else if (ForceRight){
+                    CurrentGoalPos = redStealRight;
+                    passing = true;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = redStealRight;
+                    passing = true;
+                } else {
+                    CurrentGoalPos = redStealLeft;
+                    passing = true;
+                }
+                }
+                break;
+
             case blueGoal:
                 
                 CurrentGoalPos = blueGoal;
@@ -433,6 +476,25 @@ public void ForceRight(boolean Force){
                 }
                 }
                 break;
+
+            case blueAllianceSteal:
+                
+                if (ForceLeft){
+                    CurrentGoalPos = blueStealLeft;
+                    passing = true;
+                } else if (ForceRight){
+                    CurrentGoalPos = blueStealRight;
+                    passing = true;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = blueStealLeft;
+                    passing = true;
+                } else {
+                    CurrentGoalPos = blueStealRight;
+                    passing = true;
+                }
+                }
+                break;
         
             default:
                 break;
@@ -444,15 +506,23 @@ public void ForceRight(boolean Force){
             FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
             CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
             RobotAngle = movingPose.getRotation().getDegrees();
-            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+126;
+            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+226;
             if (CalculatedAngle < TurretMin){
                 CalculatedAngle = CalculatedAngle+360;
             }
             if (CalculatedAngle > TurretMax){
                 CalculatedAngle = CalculatedAngle-360;
             }
-            if (AngleLock == false) {TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));}
-            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0894187*CalculatedDistance)-3.0199;
+            if (ClimbRight == true){
+                CalculatedAngle = CalculatedAngle+10;
+            }
+            if (ClimbLeft == true){
+                CalculatedAngle = CalculatedAngle-10;
+            }
+            if (AngleLock == false) {
+                TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
+            }
+            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0864187*CalculatedDistance)-3.0199;
             if (passing == true){
                 CalculatedHood = (0.0000362153*CalculatedDistance*CalculatedDistance)+(0.0195371*CalculatedDistance)+6.2645;
             }
@@ -468,7 +538,7 @@ public void ForceRight(boolean Force){
             else {
                 TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
             }
-            CalculatedShooter = (0.00026337*CalculatedDistance*CalculatedDistance)+(0.0357384*CalculatedDistance)+22.81237;
+            CalculatedShooter = (0.00026337*CalculatedDistance*CalculatedDistance)+(0.0357384*CalculatedDistance)+22.61237;
             if (passing == true){
                 CalculatedShooter = (-0.000020923*CalculatedDistance*CalculatedDistance)+(0.180864*CalculatedDistance)+3.99586;
             }
@@ -536,6 +606,6 @@ public void ForceRight(boolean Force){
 
 
 public enum Targets{
-    blueGoal,redGoal,blueAlliance,redAlliance
+    blueGoal,redGoal,blueAlliance,redAlliance,blueAllianceSteal,redAllianceSteal
 }
 }

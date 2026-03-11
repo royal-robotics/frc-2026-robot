@@ -41,7 +41,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond); // 2 rotations per second max angular velocity
     private double NormalSpeed = MaxSpeed * 0.75; // Normal drive speed is 75% of max speed
     private double NormalAngularRate = MaxAngularRate * 0.75; // Normal rotation rate is 75% of max rotation rate
-    private double SlowSpeed = MaxSpeed * 0.3; // Slow drive speed is 25% of max speed
+    private double SlowSpeed = MaxSpeed * 0.325; // Slow drive speed is 25% of max speed
     private double SlowAngularRate = MaxAngularRate * 0.225; // Slow rotation rate is 22.5% of max rotation rate
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -68,10 +68,14 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     private Trigger RedTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() <= 11.6);
+    private Trigger RedStealSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() <= 5.0);
     private Trigger BlueTargetSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() >= 5.0);
+    private Trigger BlueStealSwitch = new Trigger(()-> drivetrain.getState().Pose.getX() >= 11.6);
 
     private Trigger TrenchHood = new Trigger(()-> (drivetrain.getState().Pose.getX() <= 12.8&& drivetrain.getState().Pose.getX() >= 11.1)||(drivetrain.getState().Pose.getX() <= 5.5&& drivetrain.getState().Pose.getX() >= 3.7));
     private Trigger OnTarget = new Trigger(()-> turret.OnTarget());
+
+    private Trigger ClimbYay = new Trigger(()-> climber.IsClimbed());
 
 
 
@@ -88,11 +92,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("IntakeRetract", intake.IntakeDeploy());
         NamedCommands.registerCommand("TrenchShootOveride", Commands.sequence(Commands.runOnce(()->turret.TrenchToggle(false)),spindexer.Spin().withTimeout(2.5),Commands.runOnce(()->turret.TrenchToggle(true))));
         NamedCommands.registerCommand("Shoot", Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.Spin().withTimeout(2.5)));
+        NamedCommands.registerCommand("StopShoot", spindexer.NoSpin());
         NamedCommands.registerCommand("ShootOnTheMove",Commands.sequence(Commands.runOnce(()->turret.ShooterIdleCheck(false)), Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.AutoSpin()));
         NamedCommands.registerCommand("IntakeSpin", intake.AutoSpinIntake());
         NamedCommands.registerCommand("ClimbToggle", climber.AutoClimberToggle());
         NamedCommands.registerCommand("TrenchToggleOn", Commands.runOnce(()->turret.TrenchToggle(true)));
         NamedCommands.registerCommand("EndSpins",Commands.sequence(intake.AutoSpinIntakeStop(),spindexer.NoSpin()));
+        NamedCommands.registerCommand("ShootClimbLeft",Commands.runOnce(()->turret.ClimbOnLeft(true)));
+        NamedCommands.registerCommand("ShootClimbRight",Commands.runOnce(()->turret.ClimbOnRight(true)));
+        NamedCommands.registerCommand("ForceLeft", Commands.runOnce(()->turret.ForceLeft(true)));
     }
 
     private void configureBindings() {
@@ -122,13 +130,13 @@ public class RobotContainer {
 
 
         driver.y().toggleOnTrue(climber.ClimberToggle());
-        driver.leftBumper().onTrue(intake.IntakeDeploy());
+        driver.a().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().toggleOnTrue(intake.SpinIntake());
-        driver.a().whileTrue(spindexer.Unjam());
+        driver.leftBumper().whileTrue(spindexer.Unjam());
         driver.b().whileTrue(intake.SpinIntakeOut());
         //driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
         driver.x().whileTrue(drivetrain.applyRequest(()-> {
-            double CalculatingAngle = (turret.CalcAngle()+180)+126-turret.TurretAngle(); //turret.TurretAngle()-126+
+            double CalculatingAngle = (turret.CalcAngle())+226-turret.TurretAngle(); //turret.TurretAngle()-126+
             return CalcAngle.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                      .withVelocityY(-driver.getLeftX() * MaxSpeed) 
                      .withTargetDirection(Rotation2d.fromDegrees(CalculatingAngle)).withHeadingPID(3.0, 0.0, 0.0);
@@ -165,28 +173,38 @@ public class RobotContainer {
         operator.a().whileTrue(turret.sysIdDynamic(Direction.kReverse));
         operator.x().whileTrue(turret.sysIdQuasistatic(Direction.kForward));
         operator.b().whileTrue(turret.sysIdQuasistatic(Direction.kReverse));
-        operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));*/
+        operator.start().onTrue(Commands.runOnce(()->SignalLogger.stop()));
         operator.povUp().onTrue(turret.HoodStepUp());
         operator.povDown().onTrue(turret.HoodStepDown());
         operator.povLeft().onTrue(turret.TurretRotateLeft());
         operator.povRight().onTrue(turret.TurretRotateRight());
-        operator.rightTrigger().toggleOnTrue(turret.AutoTarget());
+        operator.rightTrigger().toggleOnTrue(turret.AutoTarget());*/
         operator.x().whileTrue(Commands.startEnd(()->turret.ForceLeft(true),()->turret.ForceLeft(false)));
         operator.b().whileTrue(Commands.startEnd(()->turret.ForceRight(true),()->turret.ForceRight(false)));
         operator.start().onTrue(climber.ClimberZero());
         operator.y().toggleOnTrue((Commands.startEnd(()->turret.lockTurret(true),()->turret.lockTurret(false))));
-        operator.back().whileTrue(climber.ClimberReset());
+        operator.back().whileTrue(climber.ClimberResetCommand());
+        operator.rightTrigger().whileTrue((Commands.startEnd(()->turret.ClimbOnRight(true), ()->turret.ClimbAngleOff())));
+        operator.leftTrigger().whileTrue((Commands.startEnd(()->turret.ClimbOnLeft(true), ()->turret.ClimbAngleOff())));
 
         RedTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.redAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
         RedTargetSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.redGoal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
         BlueTargetSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.blueGoal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
 
+        RedStealSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.redAllianceSteal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
+        BlueStealSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAllianceSteal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
+        RedStealSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.redAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
+        BlueStealSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
+
         TrenchHood.onTrue(Commands.runOnce(()->turret.TrenchToggle(true)));
         TrenchHood.onFalse(Commands.runOnce(()->turret.TrenchToggle(false)));
 
         OnTarget.onTrue(Commands.runOnce(()->spindexer.SpinCheck(true)));
         OnTarget.onFalse(Commands.runOnce(()->spindexer.SpinCheck(false)));
+
+        ClimbYay.onTrue(led.FastRainbow());
+
 
 
         //drivetrain.registerTelemetry(logger::telemeterize);

@@ -63,7 +63,7 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 268.0;
+    private double IntakeDown = 282.0;
     private double IntakeUp = 15.0;
 
     private double IntakeSpinGo = 35.0;
@@ -75,7 +75,7 @@ public class Intake extends SubsystemBase{
     public Intake() {
         IntakeMotorLift = new TalonFX(16,canBus);
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
-            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(15.0));
+            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(40.0));
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);

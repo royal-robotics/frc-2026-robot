@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 1.1957245080500891,
-        "y": 4.64345259391771
+        "x": 1.1145974955277276,
+        "y": 4.659677996422182
       },
       "prevControl": {
-        "x": 0.011270125223612926,
-        "y": 4.627227191413238
+        "x": -0.1509838998211095,
+        "y": 4.724579606440071
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,6 +48,10 @@
     {
       "waypointRelativePos": 0.5508021390374332,
       "rotationDegrees": 21.217664013953787
+    },
+    {
+      "waypointRelativePos": 1.8342245989304853,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [
@@ -108,6 +112,17 @@
         "type": "named",
         "data": {
           "name": "ClimbToggle"
+        }
+      }
+    },
+    {
+      "name": "ShootClimbLeft",
+      "waypointRelativePos": 2.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootClimbLeft"
         }
       }
     }

@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5970714285714305,
+        "x": 1.5970714285714314,
         "y": 7.517232142857143
       },
       "isLocked": false,
@@ -48,11 +48,11 @@
     },
     {
       "anchor": {
-        "x": 1.2119499105545615,
+        "x": 1.1794991055456168,
         "y": 4.611001788908765
       },
       "prevControl": {
-        "x": 0.4331305903398923,
+        "x": 0.7089624329159208,
         "y": 4.594776386404293
       },
       "nextControl": null,
@@ -73,7 +73,7 @@
   "constraintZones": [
     {
       "name": "Climb Approach",
-      "minWaypointRelativePos": 0.9970149253731311,
+      "minWaypointRelativePos": 0.0,
       "maxWaypointRelativePos": 3.0,
       "constraints": {
         "maxVelocity": 1.0,
@@ -100,12 +100,23 @@
     },
     {
       "name": "ClimbDown",
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 3.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "ClimbToggle"
+        }
+      }
+    },
+    {
+      "name": "ShootClimbLeft",
+      "waypointRelativePos": 3.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootClimbLeft"
         }
       }
     }
@@ -126,7 +137,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0.0,
-    "rotation": -179.1098552331851
+    "rotation": -0.6949311563472034
   },
   "useDefaultConstraints": true
 }

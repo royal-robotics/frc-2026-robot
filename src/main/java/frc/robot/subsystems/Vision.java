@@ -217,8 +217,10 @@ public class Vision extends SubsystemBase {
 
     private PoseEstimate getEstimatedRobotPoseForCamera(PhotonCamera camera, PhotonPoseEstimator poseEstimator) {
         PoseEstimate currentPoseEstimate = null;
-        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            if (readingIsValid(result.getTargets())) {
+        List<PhotonPipelineResult> list = camera.getAllUnreadResults();
+        if (list.size()>=1){
+        PhotonPipelineResult result = list.get(list.size()-1);
+        if (readingIsValid(result.getTargets())) {
                 Optional<EstimatedRobotPose> estimatedPose = poseEstimator.estimateCoprocMultiTagPose(result);
                 if (estimatedPose.isPresent()) {
                     EstimatedRobotPose possiblePose = estimatedPose.get();
@@ -228,6 +230,9 @@ public class Vision extends SubsystemBase {
                 }
             }
         }
+        /*for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+            
+        }*/
 
         return currentPoseEstimate;
     }

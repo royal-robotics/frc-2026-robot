@@ -33,15 +33,15 @@
     {
       "anchor": {
         "x": 8.25380357142857,
-        "y": 5.508875000000001
+        "y": 5.811681574239714
       },
       "prevControl": {
-        "x": 8.33478571428611,
-        "y": 7.7763749999935134
+        "x": 8.237549194991056,
+        "y": 6.444472271914133
       },
       "nextControl": {
-        "x": 8.21601141351712,
-        "y": 4.4506945784876155
+        "x": 8.280993215158956,
+        "y": 4.753175657890852
       },
       "isLocked": false,
       "linkedName": null
@@ -89,10 +89,10 @@
   "constraintZones": [
     {
       "name": "dont go surfing",
-      "minWaypointRelativePos": 0.6915254237288136,
-      "maxWaypointRelativePos": 2.2372881355932175,
+      "minWaypointRelativePos": 1.016949152542373,
+      "maxWaypointRelativePos": 2.033898305084751,
       "constraints": {
-        "maxVelocity": 1.0,
+        "maxVelocity": 0.85,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -113,7 +113,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -0.08477134002770607
   },
   "reversed": false,
   "folder": null,

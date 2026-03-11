@@ -7,37 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left T to Center CIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Center Grab Center"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Center Center to Left T DInntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left T to Depot DIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Depot to Climb"
+            "pathName": "RightTCenterShort"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 0
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightTCenterShortDouble"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightTOutpost"
           }
         }
       ]

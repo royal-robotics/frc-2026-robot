@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -34,11 +35,13 @@ public class Climber extends SubsystemBase{
     private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(15.0).withKD(0);
 
     private StatusSignal<Angle> ClimberPositionSignal;
+    private StatusSignal<Current> ClimberCurrent;
 
     private PositionVoltage ClimberPosition = new PositionVoltage(Rotations.of(0)); //ratio is 1:25
     private VoltageOut ClimbReset = new VoltageOut(0.0);
     private boolean ClimberManualOverride = false;
     private double ClimberManualOverrideValue = 0.0;
+
 
     private double ClimberGearRatio = 25.0;
     private double ClimberDistanceRatio = ClimberGearRatio/2.36;
@@ -46,6 +49,9 @@ public class Climber extends SubsystemBase{
     private double ClimberMiddle = 2.0;
     private double ClimberBottom = 0.1;
     private double ClimberReset = -2.0;
+    private double ClimbingCurrent = 45.0;
+
+    private Debouncer currentdebounce = new Debouncer(0.5);
 
 
     public Climber() {
@@ -62,10 +68,15 @@ public class Climber extends SubsystemBase{
         ClimberPositionSignal.waitForUpdate(0.02);
         ClimberMotor.setPosition(0.0);
         ClimberMotor.setControl(ClimberPosition.withPosition(0.0));
+        ClimberCurrent = ClimberMotor.getStatorCurrent();
   }
 
   public double ClimberPosition() {
     return ClimberPositionSignal.getValueAsDouble()/ClimberDistanceRatio;
+  }
+
+  public double ClimberCurrentReading() {
+    return ClimberCurrent.getValueAsDouble();
   }
 
   public Command ClimberUp(){
@@ -88,7 +99,12 @@ public class Climber extends SubsystemBase{
     return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberReset*ClimberDistanceRatio))));
   }
 
-  public Command ClimberReset(){
+  public boolean IsClimbed() {
+    return currentdebounce.calculate(ClimberCurrentReading() > ClimbingCurrent);
+    
+  }
+
+  public Command ClimberResetCommand(){
     return startEnd(()-> {ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of((ClimberReset-3)*ClimberDistanceRatio)));},
       ()->{ClimberMotor.setControl(ClimbReset);
         ClimberMotor.setPosition(0.0);
@@ -109,7 +125,7 @@ public class Climber extends SubsystemBase{
   }
 
   public void periodic() {
-    BaseStatusSignal.refreshAll(ClimberPositionSignal);
+    BaseStatusSignal.refreshAll(ClimberPositionSignal,ClimberCurrent);
   }
 }
 
