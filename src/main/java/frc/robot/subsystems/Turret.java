@@ -93,8 +93,8 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 30.0;
-    private double TurretMax = 480.0;
+    private double TurretMin = 50.0;
+    private double TurretMax = 490.0;
 
     private double HoodMin = 0.0;
     

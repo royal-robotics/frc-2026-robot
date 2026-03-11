@@ -66,19 +66,26 @@ public class LED extends SubsystemBase{
     private final LEDPattern rapidredblink = dimred.blink(Seconds.of (0.45),Seconds.of(0.05));
     private final LEDPattern redblink = dimred.blink(Seconds.of (0.9),Seconds.of(0.1));
 
-    public  LEDPattern patternToApply = dimRainbowPattern; 
-
     public boolean blueWinAuto  = false;
     public boolean weareblue = false;
 
+    public boolean Climbing = true;
+
+    public  LEDPattern patternToApply = dimRainbowPattern;
+
     public LED () {
         spindexerled.setLength(spindexerledBuffer.getLength());
+        patternToApply.applyTo(spindexerledBuffer);
         spindexerled.start();
-
+        setDefaultCommand(shiftLogic());
     }
    
     public void periodic (){
         spindexerled.setData(spindexerledBuffer);
+    }
+
+    public void ClimberStatus(boolean toggle){
+        Climbing = toggle;
     }
 
 
@@ -160,6 +167,9 @@ public class LED extends SubsystemBase{
                 if (matchtime > 0.0&&matchtime <= 5.0) {
                     rapidblueblink.applyTo(spindexerledBuffer);
                 }
+                if (Climbing == true){
+                    fastdimRainbowPattern.applyTo(spindexerledBuffer);
+                }
             } else {
                 if (matchtime > 135.0&&matchtime <= 140.0) {
                     redblink.applyTo(spindexerledBuffer);
@@ -199,6 +209,9 @@ public class LED extends SubsystemBase{
                 }
                 if (matchtime > 0.0&&matchtime <= 5.0) {
                     rapidblueblink.applyTo(spindexerledBuffer);
+                }
+                if (Climbing == true){
+                    fastdimRainbowPattern.applyTo(spindexerledBuffer);
                 }
             }
 

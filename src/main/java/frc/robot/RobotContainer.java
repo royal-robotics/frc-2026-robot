@@ -203,7 +203,7 @@ public class RobotContainer {
         OnTarget.onTrue(Commands.runOnce(()->spindexer.SpinCheck(true)));
         OnTarget.onFalse(Commands.runOnce(()->spindexer.SpinCheck(false)));
 
-        ClimbYay.onTrue(led.FastRainbow());
+        ClimbYay.onTrue(Commands.runOnce(()->led.ClimberStatus(true)));
 
 
 
