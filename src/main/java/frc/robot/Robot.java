@@ -34,9 +34,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
-        m_timeAndJoystickReplay.update();
+        //m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run();
         //SmartDashboard.putNumber("PDH", pdh.getTotalCurrent());
+        m_robotContainer.TargetingCheck();
     }
 
     @Override
@@ -70,7 +71,7 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }
         m_robotContainer.startGoal();
-        CommandScheduler.getInstance().schedule(Commands.sequence(Commands.runOnce(()->m_robotContainer.turret.ClimbAngleOff())),(Commands.runOnce(()->m_robotContainer.turret.AutoReset())),(Commands.runOnce(()->m_robotContainer.led.ClimberStatus(false))),m_robotContainer.spindexer.NoSpin(),m_robotContainer.intake.AutoSpinIntakeStop(),m_robotContainer.led.Purple());
+        CommandScheduler.getInstance().schedule(Commands.sequence(Commands.runOnce(()->m_robotContainer.turret.ClimbAngleOff())),(Commands.runOnce(()->m_robotContainer.turret.AutoReset())),(Commands.runOnce(()->m_robotContainer.led.ClimberStatus(false))),m_robotContainer.spindexer.NoSpin(),m_robotContainer.intake.AutoSpinIntakeStop());
     }
 
     @Override

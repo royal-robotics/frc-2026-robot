@@ -55,7 +55,7 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
-    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(2.0);
+    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(4.0);
     private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.0).withKV(0.11949).withKA(0.031965).withKP(2.0).withKD(0.0);
     private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0.0);
     private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-255.49)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
@@ -93,8 +93,8 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 80.0;
-    private double TurretMax = 490.0;
+    private double TurretMin = 110.0;
+    private double TurretMax = 500;
 
     private double HoodMin = 0.0;
     
@@ -364,7 +364,7 @@ public void ForceRight(boolean Force){
   }
 
   public boolean OnTarget(){
-    return Math.abs(TurretAngle()-CalculatedAngle) < 10 && Math.abs(TurretHood()-CalculatedHood) < 2.5;
+    return Math.abs(TurretAngle()-CalculatedAngle) < 10 && Math.abs(TurretHood()-CalculatedHood) < 2.5 && Math.abs(TurretShooter()-CalculatedShooter) < 10;
   }
 
   public void TrenchToggle(boolean toggle) {
@@ -507,18 +507,25 @@ public void ForceRight(boolean Force){
             CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
             RobotAngle = movingPose.getRotation().getDegrees();
             CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+226;
-            if (CalculatedAngle < TurretMin){
-                CalculatedAngle = CalculatedAngle+360;
-            }
-            if (CalculatedAngle > TurretMax){
-                CalculatedAngle = CalculatedAngle-360;
-            }
             if (ClimbRight == true){
                 CalculatedAngle = CalculatedAngle+10;
             }
             if (ClimbLeft == true){
                 CalculatedAngle = CalculatedAngle-10;
             }
+            double CurrentTurretAngle = TurretAngle();
+            if (CalculatedAngle-CurrentTurretAngle > 180){
+                CalculatedAngle = CalculatedAngle-360;
+            } else if (CalculatedAngle-CurrentTurretAngle < -180) {
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle < TurretMin){
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle > TurretMax){
+                CalculatedAngle = CalculatedAngle-360;
+            }
+            
             if (AngleLock == false) {
                 TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
             }
@@ -549,9 +556,10 @@ public void ForceRight(boolean Force){
                 CalculatedShooter = ShooterMax;
             }
             if(Idle == true){
-                CalculatedShooter = ShooterIdle;
-            }
+                TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterIdle));
+            } else {
             TurretShooterMotor.setControl(velocityControl.withVelocity(CalculatedShooter*ShooterGearRatio));
+            }
         },
         ()->{
             TurretShooterMotor.setControl(velocityControl.withVelocity(0.0));

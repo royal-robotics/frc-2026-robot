@@ -49,9 +49,11 @@ public class Climber extends SubsystemBase{
     private double ClimberMiddle = 2.0;
     private double ClimberBottom = 0.1;
     private double ClimberReset = -2.0;
-    private double ClimbingCurrent = 45.0;
+    private double ClimbingCurrent = 30.0;
 
-    private Debouncer currentdebounce = new Debouncer(0.5);
+    private Debouncer currentdebounce = new Debouncer(0.33);
+
+    private boolean climbing = false;
 
 
     public Climber() {
@@ -100,7 +102,7 @@ public class Climber extends SubsystemBase{
   }
 
   public boolean IsClimbed() {
-    return currentdebounce.calculate(ClimberCurrentReading() > ClimbingCurrent);
+    return climbing;
     
   }
 
@@ -126,6 +128,7 @@ public class Climber extends SubsystemBase{
 
   public void periodic() {
     BaseStatusSignal.refreshAll(ClimberPositionSignal,ClimberCurrent);
+    climbing = currentdebounce.calculate(ClimberCurrentReading() > ClimbingCurrent);
   }
 }
 

@@ -41,7 +41,8 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond); // 2 rotations per second max angular velocity
     private double NormalSpeed = MaxSpeed * 0.75; // Normal drive speed is 75% of max speed
     private double NormalAngularRate = MaxAngularRate * 0.75; // Normal rotation rate is 75% of max rotation rate
-    private double SlowSpeed = MaxSpeed * 0.325; // Slow drive speed is 25% of max speed
+    private double SlowSpeed = MaxSpeed * 0.275;
+    ; // Slow drive speed is 25% of max speed
     private double SlowAngularRate = MaxAngularRate * 0.225; // Slow rotation rate is 22.5% of max rotation rate
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -76,6 +77,12 @@ public class RobotContainer {
     private Trigger OnTarget = new Trigger(()-> turret.OnTarget());
 
     private Trigger ClimbYay = new Trigger(()-> climber.IsClimbed());
+
+    private boolean weAreBlue = false;
+    private boolean hasAllinace = false;
+
+    private Trigger CurrentTarget = RedTargetSwitch;
+    private Trigger CurrentSteal = RedStealSwitch;
 
 
 
@@ -187,15 +194,6 @@ public class RobotContainer {
         operator.rightTrigger().whileTrue((Commands.startEnd(()->turret.ClimbOnRight(true), ()->turret.ClimbAngleOff())));
         operator.leftTrigger().whileTrue((Commands.startEnd(()->turret.ClimbOnLeft(true), ()->turret.ClimbAngleOff())));
 
-        RedTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.redAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
-        BlueTargetSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
-        RedTargetSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.redGoal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
-        BlueTargetSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.blueGoal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
-
-        RedStealSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.redAllianceSteal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
-        BlueStealSwitch.onTrue(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAllianceSteal)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
-        RedStealSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.redAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red ));
-        BlueStealSwitch.onFalse(Commands.runOnce(()->turret.ChooseTarget(Targets.blueAlliance)).onlyIf(()->DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Blue ));
 
         TrenchHood.onTrue(Commands.runOnce(()->turret.TrenchToggle(true)));
         TrenchHood.onFalse(Commands.runOnce(()->turret.TrenchToggle(false)));
@@ -212,6 +210,24 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
+    }
+
+    public void TargetingCheck () {
+        if (hasAllinace == false) {
+            DriverStation.getAlliance().ifPresent(allianceColor -> {
+                if (allianceColor == Alliance.Blue) {
+                    weAreBlue = true;
+                    hasAllinace = true;
+                    BlueTargetSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.blueAlliance),()->turret.ChooseTarget(Targets.blueGoal)));
+                    BlueStealSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.blueAllianceSteal),()->turret.ChooseTarget(Targets.blueAlliance)));
+                } else {
+                    weAreBlue = false;
+                    hasAllinace = true;
+                    RedTargetSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.redAlliance),()->turret.ChooseTarget(Targets.redGoal)));
+                    RedStealSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.redAllianceSteal),()->turret.ChooseTarget(Targets.redAlliance)));
+                }
+            });
+        }
     }
 
     public void startGoal(){
