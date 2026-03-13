@@ -123,17 +123,13 @@ public class LED extends SubsystemBase{
         return run ( ()-> dimpurple.applyTo(spindexerledBuffer)).ignoringDisable(true);
     }
 
+    public void AllianceColor (boolean toggle) {
+        weareblue = toggle;
+    }
+
     public Command shiftLogic() {
         return run(()->{
-            if (hasAllinace == false) {
-                if(DriverStation.getAlliance().isPresent()&&DriverStation.getAlliance().get() == Alliance.Red){
-                    weareblue = false;
-                    hasAllinace = true;
-                } else {
-                    weareblue = true;
-                    hasAllinace = true;
-                }
-            }
+            
             if (hasWinner == false) {
                 String gamedata = DriverStation.getGameSpecificMessage();
                 if(gamedata.length() > 0) {

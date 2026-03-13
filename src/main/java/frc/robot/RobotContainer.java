@@ -218,11 +218,13 @@ public class RobotContainer {
                 if (allianceColor == Alliance.Blue) {
                     weAreBlue = true;
                     hasAllinace = true;
+                    led.AllianceColor(true);
                     BlueTargetSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.blueAlliance),()->turret.ChooseTarget(Targets.blueGoal)));
                     BlueStealSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.blueAllianceSteal),()->turret.ChooseTarget(Targets.blueAlliance)));
                 } else {
                     weAreBlue = false;
                     hasAllinace = true;
+                    led.AllianceColor(false);
                     RedTargetSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.redAlliance),()->turret.ChooseTarget(Targets.redGoal)));
                     RedStealSwitch.whileTrue(Commands.startEnd(()->turret.ChooseTarget(Targets.redAllianceSteal),()->turret.ChooseTarget(Targets.redAlliance)));
                 }
