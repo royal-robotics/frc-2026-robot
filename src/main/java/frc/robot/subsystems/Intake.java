@@ -80,7 +80,7 @@ public class Intake extends SubsystemBase{
         
         IntakeMotorSpin = new TalonFX(17,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
-            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(60.0)));
+            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(80.0)));
             IntakeMotorSpin.getConfigurator().apply(IntakeSpinPidConfigs);
 
         //IntakeLiftEncoder = new CANcoder(7,canBus);

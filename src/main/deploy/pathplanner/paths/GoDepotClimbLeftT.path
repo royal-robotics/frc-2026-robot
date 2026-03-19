@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5970714285714318,
+        "x": 1.5970714285714323,
         "y": 7.517232142857143
       },
       "isLocked": false,
@@ -110,17 +110,6 @@
         "type": "named",
         "data": {
           "name": "ClimbToggle"
-        }
-      }
-    },
-    {
-      "name": "ShootClimbLeft",
-      "waypointRelativePos": 3.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "ShootClimbLeft"
         }
       }
     }

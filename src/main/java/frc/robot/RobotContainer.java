@@ -41,7 +41,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond); // 2 rotations per second max angular velocity
     private double NormalSpeed = MaxSpeed * 0.75; // Normal drive speed is 75% of max speed
     private double NormalAngularRate = MaxAngularRate * 0.75; // Normal rotation rate is 75% of max rotation rate
-    private double SlowSpeed = MaxSpeed * 0.275;
+    private double SlowSpeed = MaxSpeed * 0.235;
     ; // Slow drive speed is 25% of max speed
     private double SlowAngularRate = MaxAngularRate * 0.225; // Slow rotation rate is 22.5% of max rotation rate
 
@@ -100,7 +100,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("TrenchShootOveride", Commands.sequence(Commands.runOnce(()->turret.TrenchToggle(false)),spindexer.Spin().withTimeout(2.5),Commands.runOnce(()->turret.TrenchToggle(true))));
         NamedCommands.registerCommand("Shoot", Commands.sequence(Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.Spin().withTimeout(2.5)));
         NamedCommands.registerCommand("StopShoot", spindexer.NoSpin());
-        NamedCommands.registerCommand("ShootOnTheMove",Commands.sequence(Commands.runOnce(()->turret.ShooterIdleCheck(false)), Commands.runOnce(()->spindexer.SpinCheck(true)),spindexer.AutoSpin()));
+        NamedCommands.registerCommand("ShootOnTheMove",Commands.sequence(Commands.runOnce(()->turret.ShooterIdleCheck(false)),spindexer.Spin()));
         NamedCommands.registerCommand("IntakeSpin", intake.AutoSpinIntake());
         NamedCommands.registerCommand("ClimbToggle", climber.AutoClimberToggle());
         NamedCommands.registerCommand("TrenchToggleOn", Commands.runOnce(()->turret.TrenchToggle(true)));
@@ -139,11 +139,14 @@ public class RobotContainer {
         driver.y().toggleOnTrue(climber.ClimberToggle());
         driver.a().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().toggleOnTrue(intake.SpinIntake());
-        driver.leftBumper().whileTrue(spindexer.Unjam());
-        driver.b().whileTrue(intake.SpinIntakeOut());
+        driver.b().whileTrue(spindexer.Unjam());
+        driver.leftBumper().whileTrue(intake.SpinIntakeOut());
         //driver.b().whileTrue(Commands.sequence(climber.ClimberUp(),drivetrain.driveToTower(),climber.ClimberDown()));
         driver.x().whileTrue(drivetrain.applyRequest(()-> {
             double CalculatingAngle = (turret.CalcAngle())+226-turret.TurretAngle(); //turret.TurretAngle()-126+
+            if (weAreBlue == false) {
+                CalculatingAngle = (turret.CalcAngle())+226+180-turret.TurretAngle();
+            }
             return CalcAngle.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                      .withVelocityY(-driver.getLeftX() * MaxSpeed) 
                      .withTargetDirection(Rotation2d.fromDegrees(CalculatingAngle)).withHeadingPID(3.0, 0.0, 0.0);
