@@ -66,12 +66,12 @@
       "rotationDegrees": -78.50637666905145
     },
     {
-      "waypointRelativePos": 1.0828877005347601,
+      "waypointRelativePos": 1.058823529411765,
       "rotationDegrees": -63.595231829913644
     },
     {
       "waypointRelativePos": 2.0053475935828917,
-      "rotationDegrees": 0.0
+      "rotationDegrees": 179.93424132606313
     }
   ],
   "constraintZones": [
@@ -103,13 +103,13 @@
       }
     },
     {
-      "name": "ShootOnTheMove",
+      "name": "Shoot",
       "waypointRelativePos": 2.98,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "ShootOnTheMove"
+          "name": "Shoot"
         }
       }
     }
@@ -124,7 +124,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 179.21251685400293
   },
   "reversed": false,
   "folder": null,

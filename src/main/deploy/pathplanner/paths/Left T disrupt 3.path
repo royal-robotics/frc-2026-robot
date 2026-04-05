@@ -1,0 +1,114 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.34942754919499,
+        "y": 7.450447227191413
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.9719677996422185,
+        "y": 7.937209302325581
+      },
+      "isLocked": false,
+      "linkedName": "LeftTdisrupt2"
+    },
+    {
+      "anchor": {
+        "x": 5.7875134168157425,
+        "y": 6.363345259391771
+      },
+      "prevControl": {
+        "x": 5.738837209302325,
+        "y": 6.720304114490161
+      },
+      "nextControl": {
+        "x": 5.83618962432916,
+        "y": 6.006386404293381
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.7875134168157425,
+        "y": 1.0251878354203927
+      },
+      "prevControl": {
+        "x": 5.828076923076924,
+        "y": 3.4995617173524147
+      },
+      "nextControl": {
+        "x": 5.783415606755917,
+        "y": 0.7752214217710514
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.12397137745975,
+        "y": 1.3659212880143103
+      },
+      "prevControl": {
+        "x": 6.112021466905188,
+        "y": 0.7818067978533085
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2.262032085561499,
+      "rotationDegrees": 90.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeDeploy",
+      "waypointRelativePos": 0.7118644067796613,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDeploy"
+        }
+      }
+    },
+    {
+      "name": "ShootOnTheMove",
+      "waypointRelativePos": 0.7728813559322036,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootOnTheMove"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 84.28940686250027
+  },
+  "useDefaultConstraints": false
+}

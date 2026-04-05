@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Copy of $T-Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Copy of $Center-Sweep"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$No climb Second-U"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeSpin"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootOnTheMove"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

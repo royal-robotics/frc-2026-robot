@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -14,6 +15,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -26,6 +28,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
@@ -43,13 +46,14 @@ public class Intake extends SubsystemBase{
 
     private PositionVoltage PositionControl = new PositionVoltage(0.0);
     private VelocityVoltage VelocityControl = new VelocityVoltage(0.0);
+    private VoltageOut VoltageControl = new VoltageOut(0.0);
 
     //motor configs
     private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive);
     private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(50)).withStatorCurrentLimitEnable(true);
     //private FeedbackConfigs intakeFeedbackConfigs= new FeedbackConfigs().withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder).withFeedbackRemoteSensorID(7);
     //test values
-    private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0);
+    private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(160.0).withKD(0);
     private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKA(0.001).withKP(0.1).withKD(0);
   
     //CAN configs
@@ -63,7 +67,7 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 282.0;
+    private double IntakeDown = 284.0;
     private double IntakeUp = 15.0;
 
     private double IntakeSpinGo = 35.0;
@@ -71,16 +75,18 @@ public class Intake extends SubsystemBase{
 
     private boolean DeployStatus = false;
 
+    private double IntakeSpeed = 12.0;
+
     //Intake classifier
     public Intake() {
         IntakeMotorLift = new TalonFX(16,canBus);
             IntakeMotorLift.getConfigurator().apply(IntakeMotorConfig.withNeutralMode(NeutralModeValue.Brake));
-            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(40.0));
+            IntakeMotorLift.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(45)).withSupplyCurrentLimit(Amps.of(30)).withSupplyCurrentLimitEnable(true));
             IntakeMotorLift.getConfigurator().apply(IntakeLiftPidConfigs);
         
         IntakeMotorSpin = new TalonFX(17,canBus);
             IntakeMotorSpin.getConfigurator().apply(IntakeMotorConfig);
-            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(80.0)));
+            IntakeMotorSpin.getConfigurator().apply(IntakeCurrentConfig.withStatorCurrentLimit(Amps.of(60.0)).withSupplyCurrentLimit(Amps.of(60)).withSupplyCurrentLimitEnable(true));
             IntakeMotorSpin.getConfigurator().apply(IntakeSpinPidConfigs);
 
         //IntakeLiftEncoder = new CANcoder(7,canBus);
@@ -142,20 +148,40 @@ public class Intake extends SubsystemBase{
     });
     }
 
-    public Command SpinIntake(){
+    /*public Command SpinIntake(){
         return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+    }*/
+
+    public Command SpinIntake(){
+        return runEnd(()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(IntakeSpeed))),()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(0.0))));
     }
+
+    /*public Command SpinIntakeOut(){
+        return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(-IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+    }*/
 
     public Command SpinIntakeOut(){
-        return runEnd(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(-IntakeSpinGo)),()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+        return runEnd(()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(-6.0))),()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(0.0))));
     }
 
-    public Command AutoSpinIntake(){
+    /*public Command AutoSpinIntake(){
         return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinGo)));
+    }*/
+    
+    public Command AutoSpinIntake(){
+        return runOnce(()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(IntakeSpeed))));
     }
+
+    /*public Command AutoSpinIntakeStop(){
+        return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+    }*/
 
     public Command AutoSpinIntakeStop(){
-        return runOnce(()->IntakeMotorSpin.setControl(VelocityControl.withVelocity(IntakeSpinNo)));
+        return runOnce(()->IntakeMotorSpin.setControl(VoltageControl.withOutput(Volts.of(IntakeSpeed))));
+    }
+
+    public Command AutoUnjam(){
+        return Commands.sequence(SpinIntakeOut().withTimeout(0.35),AutoSpinIntake());
     }
 
 

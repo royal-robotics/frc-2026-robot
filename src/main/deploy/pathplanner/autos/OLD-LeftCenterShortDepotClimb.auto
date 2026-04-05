@@ -85,6 +85,25 @@
               }
             ]
           }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootClimbLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootOnTheMove"
+                }
+              }
+            ]
+          }
         }
       ]
     }

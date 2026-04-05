@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -34,7 +35,7 @@ public class Spindexer extends SubsystemBase {
     private TalonFX SpindexerMotor;
     private TalonFX UptakeMotor;
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
-    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(30)).withStatorCurrentLimitEnable(true);
+    private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(30)).withStatorCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(30)).withSupplyCurrentLimitEnable(true);
     private Slot0Configs SpindexerPIDConfigs = new Slot0Configs().withKS(0.11228).withKV(0.093345).withKA(0.0016982).withKP(0.033478).withKD(0);
     private Slot0Configs UptakePIDConfigs = new Slot0Configs().withKS(0.065067).withKV(0.11671).withKA(0.0012266).withKP(0.12546).withKD(0);
 
@@ -121,13 +122,20 @@ public class Spindexer extends SubsystemBase {
         SpinGo = Spin;
     }
 
-    public Command NoSpin(){
+    /*public Command NoSpin(){
     return runOnce (()-> {SpindexerMotor.setControl(VelocityControl.withVelocity(0.0));
                 UptakeMotor.setControl(VelocityControl.withVelocity(0.0));
 });
-};
+};*/
 
-    public Command Spin(){
+    public Command NoSpin(){
+        return runOnce(()->{
+            SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+            UptakeMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+        });
+    }
+
+    /*public Command Spin(){
         return runEnd(()->{
             if (SpinGo) {SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
                 UptakeMotor.setControl(VelocityControl.withVelocity(3*SpindexerSpeed*UptakeGearRatio));}
@@ -138,9 +146,24 @@ public class Spindexer extends SubsystemBase {
         },
         ()->{SpindexerMotor.setControl(VelocityControl.withVelocity(0.0*SpindexerGearRatio));
         UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));});
+    }*/
+
+    public Command Spin(){
+        return runEnd(()->{
+            if (SpinGo) {
+                SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(9.0)));
+                UptakeMotor.setControl(voltageOut.withOutput(Volts.of(12.0)));
+            } else {
+                SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+                UptakeMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+            }
+        }, ()-> {
+            SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+            UptakeMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+        });
     }
 
-    public Command AutoSpin(){
+    /*public Command AutoSpin(){
         return runOnce(()->{
             if (SpinGo) {SpindexerMotor.setControl(VelocityControl.withVelocity(SpindexerSpeed*SpindexerGearRatio));
                 UptakeMotor.setControl(VelocityControl.withVelocity(3*SpindexerSpeed*UptakeGearRatio));}
@@ -149,10 +172,26 @@ public class Spindexer extends SubsystemBase {
                 UptakeMotor.setControl(VelocityControl.withVelocity(0.0*UptakeGearRatio));
             }
         });
+    }*/
+
+    public Command AutoSpin(){
+        return runOnce(()->{
+            if (SpinGo) {
+                SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(9.0)));
+                UptakeMotor.setControl(voltageOut.withOutput(Volts.of(12.0)));
+            } else {
+                SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+                UptakeMotor.setControl(voltageOut.withOutput(Volts.of(0.0)));
+            }
+        });
     }
 
-    public Command Unjam(){
+    /*public Command Unjam(){
         return runEnd(()->SpindexerMotor.setControl(VelocityControl.withVelocity(-0.5*SpindexerSpeed*SpindexerGearRatio)),()->SpindexerMotor.setControl(VelocityControl.withVelocity(0.0)));
+    }*/
+
+    public Command Unjam(){
+        return runEnd(()->SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(-6.0))), ()->SpindexerMotor.setControl(voltageOut.withOutput(Volts.of(0.0))));
     }
 
     public Command SpindexerManual(){

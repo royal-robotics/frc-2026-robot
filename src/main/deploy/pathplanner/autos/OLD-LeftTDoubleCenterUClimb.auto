@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$T-Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center-U"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Second-U"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

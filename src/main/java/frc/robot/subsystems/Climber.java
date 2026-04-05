@@ -16,6 +16,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,9 +31,9 @@ public class Climber extends SubsystemBase{
     private TalonFX ClimberMotor; 
     
     //motor configs
-    private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive);
-    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(60)).withStatorCurrentLimitEnable(true);
-    private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(15.0).withKD(0);
+    private MotorOutputConfigs IntakeMotorConfig= new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive).withNeutralMode(NeutralModeValue.Brake);
+    private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(50)).withStatorCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(50)).withSupplyCurrentLimitEnable(true);
+    private Slot0Configs climberSlot0Configs = new Slot0Configs().withKS(0.1).withKV(0.1).withKA(0.001).withKP(30.0).withKD(0);
 
     private StatusSignal<Angle> ClimberPositionSignal;
     private StatusSignal<Current> ClimberCurrent;
@@ -45,7 +46,7 @@ public class Climber extends SubsystemBase{
 
     private double ClimberGearRatio = 25.0;
     private double ClimberDistanceRatio = ClimberGearRatio/2.36;
-    private double ClimberTop = 8.0;
+    private double ClimberTop = 6.0;
     private double ClimberMiddle = 2.0;
     private double ClimberBottom = 0.1;
     private double ClimberReset = -2.0;
@@ -54,6 +55,7 @@ public class Climber extends SubsystemBase{
     private Debouncer currentdebounce = new Debouncer(0.33);
 
     private boolean climbing = false;
+    private boolean ClimbToggle = false;
 
 
     public Climber() {
@@ -101,14 +103,26 @@ public class Climber extends SubsystemBase{
     return runOnce(()->ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of(ClimberReset*ClimberDistanceRatio))));
   }
 
+  public Command ClimberTestUp(){
+    return startEnd(()->{ ClimbToggle = true; ClimberMotor.setControl(ClimbReset.withOutput(Volts.of(12.0)));}, ()->ClimberMotor.setControl(ClimbReset.withOutput(0.0))).until(()->ClimberPosition() >= ClimberTop);
+  }
+
+  public Command ClimberTestDown(){
+    return startEnd(()->{ ClimbToggle = false; ClimberMotor.setControl(ClimbReset.withOutput(Volts.of(-12.0)));}, ()->ClimberMotor.setControl(ClimbReset.withOutput(0.0))).until(()->ClimberPosition() <= ClimberBottom);
+  }
+
+  public Command ClimberToggleTest(){
+    return Commands.either(ClimberTestDown(), ClimberTestUp(), ()->ClimbToggle);
+  }
+
   public boolean IsClimbed() {
     return climbing;
     
   }
 
   public Command ClimberResetCommand(){
-    return startEnd(()-> {ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of((ClimberReset-3)*ClimberDistanceRatio)));},
-      ()->{ClimberMotor.setControl(ClimbReset);
+    return startEnd(()-> {/*ClimberMotor.setControl(ClimberPosition.withPosition(Rotations.of((ClimberReset-3)*ClimberDistanceRatio)));*/ClimberMotor.setControl(ClimbReset.withOutput(Volts.of(-1.0)));},
+      ()->{ClimberMotor.setControl(ClimbReset.withOutput(Volts.of(0.0)));
         ClimberMotor.setPosition(0.0);
       });
   }

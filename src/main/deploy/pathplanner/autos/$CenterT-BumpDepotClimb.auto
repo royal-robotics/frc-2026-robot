@@ -1,0 +1,56 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BumpT-Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$Center-BumpDepotClimb part two"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoUnjam"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootClimbLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbDown"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -55,11 +55,11 @@ public class Turret extends SubsystemBase{
 
     private MotorOutputConfigs outfitConfigs = new MotorOutputConfigs();
     private CurrentLimitsConfigs limitsConfigs = new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(40)).withStatorCurrentLimitEnable(true);
-    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(4.0);
-    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.0).withKV(0.11949).withKA(0.031965).withKP(2.0).withKD(0.0);
+    private Slot0Configs TurretPIDConfigs = new Slot0Configs().withKS(0.16433).withKV(0.11742).withKA(0.0061442).withKP(20.0).withKD(2.0);
+    private Slot0Configs ShooterPIDConfigs = new Slot0Configs().withKS(0.2148).withKV(0.11858).withKA(0.011166).withKP(0.2).withKD(0.0);
     private Slot0Configs HoodPIDConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0.0);
-    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-255.49)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
-    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-277.3)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
+    private MagnetSensorConfigs magnetConfigsSmall = new MagnetSensorConfigs().withMagnetOffset(Degrees.of(-272.02)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
+    private MagnetSensorConfigs magnetConfigsBig = new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withMagnetOffset(Degrees.of(-302.16)).withAbsoluteSensorDiscontinuityPoint(Degrees.of(360.0));
 
     private StatusSignal<Angle> turretAngleSignal;
     private StatusSignal<Angle> turretHoodSignal;
@@ -93,8 +93,9 @@ public class Turret extends SubsystemBase{
     private double RealTurretAngle = 0.0;
     private double TurretAngleError = 0.0;
 
-    private double TurretMin = 120.0;
-    private double TurretMax = 495.0;
+    private double TurretMin = 45;
+    private double TurretMax = 415.0;
+    public double TurretForward = 137.0;
 
     private double HoodMin = 0.0;
     
@@ -186,10 +187,10 @@ public class Turret extends SubsystemBase{
         TurretShooterMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
         TurretShooterFollowerMotor.getConfigurator().apply(outfitConfigs.withNeutralMode(NeutralModeValue.Coast));
 
-        TurretAngleMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
-        TurretHoodMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(20)));
-        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
-        TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)));
+        TurretAngleMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)).withSupplyCurrentLimit(Amps.of(40)).withSupplyCurrentLimitEnable(true));
+        TurretHoodMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(20)).withSupplyCurrentLimit(Amps.of(20)).withSupplyCurrentLimitEnable(true));
+        TurretShooterMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)).withSupplyCurrentLimit(Amps.of(40)).withSupplyCurrentLimitEnable(true));
+        TurretShooterFollowerMotor.getConfigurator().apply(limitsConfigs.withStatorCurrentLimit(Amps.of(40)).withSupplyCurrentLimit(Amps.of(40)).withSupplyCurrentLimitEnable(true));
 
         TurretShooterMotor.getConfigurator().apply(ShooterPIDConfigs);
         TurretHoodMotor.getConfigurator().apply(HoodPIDConfigs);
@@ -215,11 +216,12 @@ public class Turret extends SubsystemBase{
 
         GetTurretAngle();
         TurretAngleMotor.setPosition(Degrees.of(RealTurretAngle*TurretGearRatio));
+        //TurretAngleMotor.setPosition(Degrees.of(TurretForward*TurretGearRatio));
 
-        //SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
-        //SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
-        //SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
-        //SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
+        SmartDashboard.putBoolean("TurretManualOverride", TurretOverride);
+        SmartDashboard.putNumber("TurretAngleOverride", TurretAngleOverride);
+        SmartDashboard.putNumber("TurretHoodOverride", TurretHoodOverride);
+        SmartDashboard.putNumber("TurretShooterOverride", TurretShooterOverride);
 
         setDefaultCommand(AutoTarget());
         //setDefaultCommand(TurretManual());
@@ -293,7 +295,7 @@ public void ForceRight(boolean Force){
             TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(SmartDashboard.getNumber("TurretHoodOverride", TurretHoodOverride)*HoodGearRatio)));
             TurretShooterMotor.setControl(velocityControl.withVelocity(SmartDashboard.getNumber("TurretShooterOverride", TurretShooterOverride)*ShooterGearRatio));
             Pose2d originalPose = TotalRobotPose.Pose;
-            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.15));
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.2));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
             Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
             Translation2d CurrentGoalPos = new Translation2d();
@@ -316,6 +318,20 @@ public void ForceRight(boolean Force){
                 }
                 break;
 
+            case redAllianceSteal:
+                if (ForceLeft){
+                    CurrentGoalPos = redStealLeft;
+                } else if (ForceRight){
+                    CurrentGoalPos = redStealRight;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = redStealRight;
+                } else {
+                    CurrentGoalPos = redStealLeft;
+                }
+                }
+                break;
+
             case blueGoal:
                 
                 CurrentGoalPos = blueGoal;
@@ -334,16 +350,51 @@ public void ForceRight(boolean Force){
                 }
                 }
                 break;
+
+            case blueAllianceSteal:
+                
+                if (ForceLeft){
+                    CurrentGoalPos = blueStealLeft;
+                } else if (ForceRight){
+                    CurrentGoalPos = blueStealRight;
+                } else {
+                if (ShooterPosition.getY() >= 4.035) {
+                    CurrentGoalPos = blueStealLeft;
+                } else {
+                    CurrentGoalPos = blueStealRight;
+                }
+                }
+                break;
         
             default:
                 break;
         }
-            Translation2d GoalVector = (redLeft.minus(ShooterPosition));
+            Translation2d GoalVector = (CurrentGoalPos.minus(ShooterPosition));
             ChassisSpeeds FieldSpeeds = (ChassisSpeeds.fromRobotRelativeSpeeds(TotalRobotPose.Speeds,movingPose.getRotation()));
             xSpeeds = FieldSpeeds.vxMetersPerSecond;
             ySpeeds = FieldSpeeds.vyMetersPerSecond;
-            Translation2d FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
+            FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
             CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
+            RobotAngle = movingPose.getRotation().getDegrees();
+            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+TurretForward;
+            if (ClimbRight == true){
+                CalculatedAngle = CalculatedAngle+10;
+            }
+            if (ClimbLeft == true){
+                CalculatedAngle = CalculatedAngle-10;
+            }
+            double CurrentTurretAngle = TurretAngle();
+            if (CalculatedAngle-CurrentTurretAngle > 180){
+                CalculatedAngle = CalculatedAngle-360;
+            } else if (CalculatedAngle-CurrentTurretAngle < -180) {
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle < TurretMin){
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle > TurretMax){
+                CalculatedAngle = CalculatedAngle-360;
+            }
         }
 
         else {
@@ -364,7 +415,8 @@ public void ForceRight(boolean Force){
   }
 
   public boolean OnTarget(){
-    return Math.abs(TurretAngle()-CalculatedAngle) < 10 && Math.abs(TurretHood()-CalculatedHood) < 2.5 && Math.abs(TurretShooter()-CalculatedShooter) < 10;
+    return Math.abs(TurretAngle()-CalculatedAngle) < 15 && Math.abs(TurretHood()-CalculatedHood) < 2.5 && Math.abs(TurretShooter()-CalculatedShooter) < 10;
+    //return true;
   }
 
   public void TrenchToggle(boolean toggle) {
@@ -406,7 +458,7 @@ public void ForceRight(boolean Force){
   public Command AutoTarget(){
     return  runEnd(()->{
             Pose2d originalPose = TotalRobotPose.Pose;
-            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.175));
+            Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.199));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
             Translation2d ShooterPosition = movingPose.getTranslation().plus(ShooterVector);
             Translation2d CurrentGoalPos = new Translation2d();
@@ -506,12 +558,12 @@ public void ForceRight(boolean Force){
             FinalVector = GoalVector.minus(new Translation2d((FieldSpeeds.vxMetersPerSecond), (FieldSpeeds.vyMetersPerSecond)));
             CalculatedDistance = Units.metersToInches(FinalVector.getNorm());
             RobotAngle = movingPose.getRotation().getDegrees();
-            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+226;
+            CalculatedAngle = FinalVector.getAngle().getDegrees()-RobotAngle+TurretForward;
             if (ClimbRight == true){
-                CalculatedAngle = CalculatedAngle+10;
+                CalculatedAngle = CalculatedAngle+15;
             }
             if (ClimbLeft == true){
-                CalculatedAngle = CalculatedAngle-10;
+                CalculatedAngle = CalculatedAngle-15;
             }
             double CurrentTurretAngle = TurretAngle();
             if (CalculatedAngle-CurrentTurretAngle > 180){

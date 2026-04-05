@@ -1,0 +1,183 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.6380077294810045,
+        "y": 6.0222726839422895
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.2387999830021315,
+        "y": 5.846621275491585
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.7669366197183107,
+        "y": 7.532059859154931
+      },
+      "prevControl": {
+        "x": 3.4117616637323955,
+        "y": 7.5959330985915505
+      },
+      "nextControl": {
+        "x": 4.122111575704226,
+        "y": 7.468186619718311
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.842816901408452,
+        "y": 7.196725352112676
+      },
+      "prevControl": {
+        "x": 5.555387323943663,
+        "y": 7.723679577464789
+      },
+      "nextControl": {
+        "x": 6.188602603541856,
+        "y": 6.5627848982014365
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.689137323943662,
+        "y": 3.683697183098592
+      },
+      "prevControl": {
+        "x": 7.277678197834535,
+        "y": 3.73562726020661
+      },
+      "nextControl": {
+        "x": 6.146214788732394,
+        "y": 3.635792253521127
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.731038732394366,
+        "y": 5.36036971830986
+      },
+      "prevControl": {
+        "x": 6.270443953491524,
+        "y": 4.942765676170124
+      },
+      "nextControl": {
+        "x": 5.236021126760564,
+        "y": 5.743609154929579
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.386153846153846,
+        "y": 5.666
+      },
+      "prevControl": {
+        "x": 4.517447183098592,
+        "y": 5.5839260563380275
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "BumpT-Center end"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.5797101449275388,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 2.25,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 2.75,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 3.608695652173914,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.6716417910447765,
+      "constraints": {
+        "maxVelocity": 0.7,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "ShootOnTheMove",
+      "waypointRelativePos": 0.25,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootOnTheMove"
+        }
+      }
+    },
+    {
+      "name": "StopShoot",
+      "waypointRelativePos": 1.4328358208955219,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopShoot"
+        }
+      }
+    },
+    {
+      "name": "IntakeDeploy",
+      "waypointRelativePos": 1.6477611940298527,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDeploy"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.7,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

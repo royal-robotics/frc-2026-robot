@@ -21,6 +21,18 @@
           "data": {
             "pathName": "RightTCenterShortDouble"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeSpin"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
         }
       ]
     }

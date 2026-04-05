@@ -1,0 +1,87 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BumpB-Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$Center-BumpDepotClimb part two"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoUnjam"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ShootClimbLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbDown"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

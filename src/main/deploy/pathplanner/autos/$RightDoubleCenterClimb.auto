@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$Right T-Center"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$Right Center-Sweep"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "$Right climb Second-U"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ClimbDown"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootClimbRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

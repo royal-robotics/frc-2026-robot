@@ -3,110 +3,70 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.621625,
-        "y": 6.0
+        "x": 3.386153846153846,
+        "y": 5.666
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3745,
-        "y": 6.237714285714286
+        "x": 2.475960184182015,
+        "y": 6.113112676056339
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "End-Center-U"
     },
     {
       "anchor": {
-        "x": 0.8034464285714282,
-        "y": 5.832803571428571
+        "x": 1.4994366197183107,
+        "y": 6.542024647887324
       },
       "prevControl": {
-        "x": 0.7354225404340506,
-        "y": 6.830487264110108
+        "x": 2.6475982597861636,
+        "y": 6.128686457462897
       },
       "nextControl": {
-        "x": 0.8520357142857139,
-        "y": 5.1201607142857135
+        "x": 1.1002288732394374,
+        "y": 6.685739436619718
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.1145974955277276,
-        "y": 4.659677996422182
+        "x": 1.1794991055456168,
+        "y": 4.513649373881932
       },
       "prevControl": {
-        "x": -0.1509838998211095,
-        "y": 4.724579606440071
+        "x": 0.2698767605633807,
+        "y": 4.160946830356018
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Climb-End"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5508021390374332,
-      "rotationDegrees": 21.217664013953787
-    },
-    {
-      "waypointRelativePos": 1.8342245989304853,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 1.1,
+      "rotationDegrees": 29.999999999999996
     }
   ],
-  "constraintZones": [
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.5152542372881354,
-      "maxWaypointRelativePos": 2.0,
-      "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeDeploy",
+      "name": "ShootOnTheMove",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "IntakeDeploy"
+          "name": "ShootOnTheMove"
         }
       }
     },
     {
-      "name": "ClimbUp",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "ClimbToggle"
-        }
-      }
-    },
-    {
-      "name": "Shoot",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Shoot"
-        }
-      }
-    },
-    {
-      "name": "ClimbDown",
-      "waypointRelativePos": 2.0,
+      "name": "ClimbToggle",
+      "waypointRelativePos": 1.4149253731343299,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -117,7 +77,7 @@
     },
     {
       "name": "ShootClimbLeft",
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 1.9223880597014922,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -125,10 +85,32 @@
           "name": "ShootClimbLeft"
         }
       }
+    },
+    {
+      "name": "ClimbToggle",
+      "waypointRelativePos": 1.9820895522388067,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ClimbToggle"
+        }
+      }
+    },
+    {
+      "name": "ShootOnTheMove",
+      "waypointRelativePos": 2.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootOnTheMove"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 0.7,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -142,8 +124,8 @@
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 0.6,
+    "rotation": 160.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

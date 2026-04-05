@@ -1,0 +1,118 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.300751341681575,
+        "y": 0.6195527728085859
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.300751341681575,
+        "y": 0.6195527728085855
+      },
+      "isLocked": false,
+      "linkedName": "RightTDisrupt2"
+    },
+    {
+      "anchor": {
+        "x": 6.160697674418604,
+        "y": 0.5708765652951695
+      },
+      "prevControl": {
+        "x": 5.160697674418604,
+        "y": 0.5708765652951696
+      },
+      "nextControl": {
+        "x": 7.160697674418604,
+        "y": 0.5708765652951695
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.965992844364937,
+        "y": 6.6391771019678
+      },
+      "prevControl": {
+        "x": 5.26830053667263,
+        "y": -0.09436493738819429
+      },
+      "nextControl": {
+        "x": 6.06905554088304,
+        "y": 7.633851963712289
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.9779427549195,
+        "y": 6.768980322003578
+      },
+      "prevControl": {
+        "x": 6.923291592128802,
+        "y": 6.6716279069767435
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.4064171122994678,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 2.51069518716578,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeDeploy",
+      "waypointRelativePos": 1.301694915254233,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDeploy"
+        }
+      }
+    },
+    {
+      "name": "ShootOnTheMove",
+      "waypointRelativePos": 1.525423728813555,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ShootOnTheMove"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 1.5911402711946405
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -80.5376777919743
+  },
+  "useDefaultConstraints": false
+}

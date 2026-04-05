@@ -3,85 +3,81 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.605428571428571,
-        "y": 7.355267857142857
+        "x": 8.55742957746479,
+        "y": 5.328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5970714285714331,
-        "y": 7.517232142857143
+        "x": 8.30193661971831,
+        "y": 4.593457746478873
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Start-Center-U"
     },
     {
       "anchor": {
-        "x": 0.7548571428571424,
-        "y": 7.355267857142857
+        "x": 7.519489436619718,
+        "y": 4.769542253521126
       },
       "prevControl": {
-        "x": 1.2569464285714285,
-        "y": 7.420053571428571
+        "x": 7.905255741475653,
+        "y": 4.615235731578752
       },
       "nextControl": {
-        "x": 0.4463212471589658,
-        "y": 7.315456773826963
+        "x": 7.20012323943662,
+        "y": 4.897288732394365
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.7548571428571424,
-        "y": 5.016636851520572
+        "x": 6.960598591549297,
+        "y": 5.184718309859155
       },
       "prevControl": {
-        "x": 0.8100653821553898,
-        "y": 5.26046476278913
+        "x": 7.227082844653676,
+        "y": 4.918234056754776
       },
       "nextControl": {
-        "x": 0.6762508625095827,
-        "y": 4.669471185790953
+        "x": 6.673169014084508,
+        "y": 5.472147887323944
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.1794991055456168,
-        "y": 4.513649373881932
+        "x": 3.386153846153846,
+        "y": 5.666
       },
       "prevControl": {
-        "x": 0.7089624329159208,
-        "y": 4.49742397137746
+        "x": 4.376189057421452,
+        "y": 5.666
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Climb-End"
+      "linkedName": "End-Center-U"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.44919786096256736,
-      "rotationDegrees": 90.42789402655738
+      "waypointRelativePos": 1.2898550724637667,
+      "rotationDegrees": -59.99999999999999
     },
     {
-      "waypointRelativePos": 1.6363636363636342,
-      "rotationDegrees": 74.01738155417003
-    },
-    {
-      "waypointRelativePos": 2.510695187165782,
+      "waypointRelativePos": 2.369565217391307,
       "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [
     {
-      "name": "Climb Approach",
+      "name": "Constraints Zone",
       "minWaypointRelativePos": 0.0,
-      "maxWaypointRelativePos": 3.0,
+      "maxWaypointRelativePos": 2.0955223880597034,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 3.0,
+        "maxVelocity": 1.5,
+        "maxAcceleration": 4.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -92,45 +88,51 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "ClimbUp",
-      "waypointRelativePos": 0.13731343283582095,
+      "name": "ShootOnTheMove",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "ClimbToggle"
+          "name": "ShootOnTheMove"
         }
       }
     },
     {
-      "name": "ClimbDown",
-      "waypointRelativePos": 3.0,
+      "name": "AutoUnjam",
+      "waypointRelativePos": 0.25970149253731356,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StopShoot",
+      "waypointRelativePos": 1.7462686567164203,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "ClimbToggle"
+          "name": "StopShoot"
         }
       }
     }
   ],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 0.7,
+    "rotation": 160.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -0.6949311563472034
+    "velocity": 1.5,
+    "rotation": 90.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

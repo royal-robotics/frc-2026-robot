@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.521932021466905,
+        "y": 7.466672629695886
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.521932021466907,
+        "y": 7.466672629695886
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.14019677996422,
+        "y": 6.28221824686941
+      },
+      "prevControl": {
+        "x": 7.520552491385201,
+        "y": 7.0671010124028335
+      },
+      "nextControl": {
+        "x": 8.62695885509839,
+        "y": 5.665652951699462
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.578282647584974,
+        "y": 0.9765116279069763
+      },
+      "prevControl": {
+        "x": 8.752239119510257,
+        "y": 3.295931253577434
+      },
+      "nextControl": {
+        "x": 8.529606440071557,
+        "y": 0.32749552772808554
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.4305545617173525,
+        "y": 0.6357781753130587
+      },
+      "prevControl": {
+        "x": 6.955742397137746,
+        "y": 0.7493559928443643
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "LeftTdisrupt"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.8208556149732613,
+      "rotationDegrees": 45.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": true
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 52.85331330197815
+  },
+  "useDefaultConstraints": false
+}
