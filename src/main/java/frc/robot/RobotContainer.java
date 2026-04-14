@@ -144,6 +144,7 @@ public class RobotContainer {
 
 
         //driver.y().toggleOnTrue(climber.ClimberToggle());
+        driver.y().onTrue(climber.CancelClimb());
         driver.y().onTrue(climber.ClimberToggleTest());
         driver.a().onTrue(intake.IntakeDeploy());
         driver.leftTrigger().toggleOnTrue(intake.SpinIntake());

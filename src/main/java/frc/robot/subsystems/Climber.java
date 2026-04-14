@@ -115,6 +115,10 @@ public class Climber extends SubsystemBase{
     return Commands.either(ClimberTestDown(), ClimberTestUp(), ()->ClimbToggle);
   }
 
+  public Command CancelClimb(){
+    return runOnce(()->{ClimberTestUp().cancel(); ClimberTestDown().cancel();});
+  }
+
   public boolean IsClimbed() {
     return climbing;
     
