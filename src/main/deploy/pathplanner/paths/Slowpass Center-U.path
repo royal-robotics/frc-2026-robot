@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.55742957746479,
+        "x": 8.5,
         "y": 5.328
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.30193661971831,
+        "x": 8.24450704225352,
         "y": 4.593457746478873
       },
       "isLocked": false,

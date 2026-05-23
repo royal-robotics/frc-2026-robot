@@ -53,8 +53,8 @@ public class Intake extends SubsystemBase{
     private CurrentLimitsConfigs IntakeCurrentConfig= new CurrentLimitsConfigs().withStatorCurrentLimit(Amps.of(50)).withStatorCurrentLimitEnable(true);
     //private FeedbackConfigs intakeFeedbackConfigs= new FeedbackConfigs().withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder).withFeedbackRemoteSensorID(7);
     //test values
-    private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(160.0).withKD(0);
-    private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKA(0.001).withKP(0.1).withKD(0);
+    private Slot0Configs IntakeLiftPidConfigs= new Slot0Configs().withKS(0.08).withKV(0.1).withKA(0.001).withKP(40.0).withKD(0.0);
+    private Slot0Configs IntakeSpinPidConfigs= new Slot0Configs().withKS(0.05).withKV(0.1).withKA(0.001).withKP(0.1).withKD(0.0);
   
     //CAN configs
     private MagnetSensorConfigs IntakeCANMagnetSensor= new MagnetSensorConfigs().withSensorDirection(SensorDirectionValue.Clockwise_Positive).withAbsoluteSensorDiscontinuityPoint(Degrees.of(270)).withMagnetOffset(Degrees.of(-18.98));
@@ -67,7 +67,7 @@ public class Intake extends SubsystemBase{
     private double IntakeLiftOverride = 0.0;
     private double IntakeSpinOverride = 0.0;
 
-    private double IntakeDown = 284.0;
+    private double IntakeDown = 280.0;
     private double IntakeUp = 15.0;
 
     private double IntakeSpinGo = 35.0;

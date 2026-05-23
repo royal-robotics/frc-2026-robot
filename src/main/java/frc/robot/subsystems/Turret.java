@@ -581,7 +581,7 @@ public void ForceRight(boolean Force){
             if (AngleLock == false) {
                 TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
             }
-            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0864187*CalculatedDistance)-3.0199;
+            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0864187*CalculatedDistance)-2.7699;
             if (passing == true){
                 CalculatedHood = (0.0000362153*CalculatedDistance*CalculatedDistance)+(0.0195371*CalculatedDistance)+6.2645;
             }
