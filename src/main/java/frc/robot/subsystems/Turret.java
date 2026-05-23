@@ -8,6 +8,9 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.photonvision.PhotonUtils;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.SignalLogger;
@@ -151,6 +154,14 @@ public class Turret extends SubsystemBase{
     private boolean ClimbRight = false;
     private boolean ClimbLeft = false;
 
+    private boolean Demo = false;
+
+    private PhotonTrackedTarget TargetDistance;
+
+    private double TargetYaw = 0.0;
+    private double TargetPitch = 0.0;
+    private double TargetRange = 0.0;
+
 
     private final SysIdRoutine ShooterPID = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -231,6 +242,10 @@ public class Turret extends SubsystemBase{
         TotalRobotPose = TheRobotPose;
     }
 
+    public void getTargetDistance(PhotonTrackedTarget RobotDistance) {
+        TargetDistance = RobotDistance;
+    }
+
     public double TurretAngle() {
         return turretAngleSignal.getValue().in(Degrees)/TurretGearRatio;
     }
@@ -286,6 +301,10 @@ public void ForceLeft(boolean Force){
 
 public void ForceRight(boolean Force){
     ForceRight = Force;
+}
+
+public void DemoTrack(){
+    Demo = true;
 }
 
   public Command TurretManual(){
@@ -457,6 +476,58 @@ public void ForceRight(boolean Force){
 
   public Command AutoTarget(){
     return  runEnd(()->{
+        if(Demo==true){ 
+            double CurrentTurretAngle = TurretAngle();
+            if(TargetDistance!=null){
+                TargetYaw = TargetDistance.getYaw();
+                TargetPitch = TargetDistance.getPitch();
+                TargetRange = PhotonUtils.calculateDistanceToTargetMeters(Units.inchesToMeters(17.0), Units.inchesToMeters(44), Units.degreesToRadians(-30), Units.degreesToRadians(Math.abs(TargetDistance.getPitch())));
+                CalculatedDistance = Units.metersToInches(TargetRange);
+            }else{
+                TargetYaw = 0.0;
+            }
+            CalculatedAngle = CurrentTurretAngle+TargetYaw;
+
+           
+            if (CalculatedAngle-CurrentTurretAngle > 180){
+                CalculatedAngle = CalculatedAngle-360;
+            } else if (CalculatedAngle-CurrentTurretAngle < -180) {
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle < TurretMin){
+                CalculatedAngle = CalculatedAngle+360;
+            }
+            if (CalculatedAngle > TurretMax){
+                CalculatedAngle = CalculatedAngle-360;
+            }
+            if (AngleLock == false) {
+                TurretAngleMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedAngle*TurretGearRatio)));
+            }
+            
+            CalculatedHood = (-0.000146914*CalculatedDistance*CalculatedDistance)+(0.0864187*CalculatedDistance)-3.0199;
+            
+            if(CalculatedHood < HoodMin){
+                CalculatedHood = HoodMin;
+            }
+            if(CalculatedHood > HoodMax){
+                CalculatedHood = HoodMax;
+            }
+            TurretHoodMotor.setControl(positionControl.withPosition(Degrees.of(CalculatedHood*HoodGearRatio)));
+            
+            CalculatedShooter = (0.00026337*CalculatedDistance*CalculatedDistance)+(0.0357384*CalculatedDistance)+22.21237;
+            
+            if(CalculatedShooter < ShooterMin){
+                CalculatedShooter = ShooterMin;
+            }
+            if(CalculatedShooter > ShooterMax){
+                CalculatedShooter = ShooterMax;
+            }
+            if(Idle == true){
+                TurretShooterMotor.setControl(velocityControl.withVelocity(ShooterIdle));
+            } else {
+            TurretShooterMotor.setControl(velocityControl.withVelocity(CalculatedShooter*ShooterGearRatio));
+            }
+        }else{
             Pose2d originalPose = TotalRobotPose.Pose;
             Pose2d movingPose = originalPose.exp(TotalRobotPose.Speeds.toTwist2d(0.199));
             Translation2d ShooterVector = ShooterOffset.rotateBy(movingPose.getRotation());
@@ -612,11 +683,11 @@ public void ForceRight(boolean Force){
             } else {
             TurretShooterMotor.setControl(velocityControl.withVelocity(CalculatedShooter*ShooterGearRatio));
             }
-        },
+        }},
         ()->{
             TurretShooterMotor.setControl(velocityControl.withVelocity(0.0));
         }
-        );
+    );
   }
 
   private void GetTurretAngle(){

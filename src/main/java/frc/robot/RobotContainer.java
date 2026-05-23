@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -64,7 +65,7 @@ public class RobotContainer {
     public final Intake intake = new Intake();
     public final Spindexer spindexer = new Spindexer();
     public final LED led = new LED();
-    public final Vision vision = new Vision(drivetrain::getVision);
+    public final Vision vision = new Vision(drivetrain::getVision,turret::getTargetDistance);
 
     private final SendableChooser<Command> autoChooser;
 
@@ -88,6 +89,8 @@ public class RobotContainer {
     private Trigger CurrentTarget = RedTargetSwitch;
     private Trigger CurrentSteal = RedStealSwitch;
 
+    private boolean Demo = false;
+
 
 
     public RobotContainer() {
@@ -96,6 +99,16 @@ public class RobotContainer {
         configureBindings();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("AutoMode", autoChooser);
+        SmartDashboard.putData("Demo Toggle", goDemoMode());
+    }
+
+    public Command goDemoMode() {
+        return new InstantCommand(
+            ()-> {Demo = !Demo;
+                if(Demo==true){
+                vision.turnPoseOff();
+                turret.DemoTrack();}
+    }).ignoringDisable(true);
     }
 
     public void RegisterNamedCommands(){
