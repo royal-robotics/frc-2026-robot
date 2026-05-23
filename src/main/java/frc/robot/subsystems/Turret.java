@@ -483,11 +483,9 @@ public void DemoTrack(){
                 TargetPitch = TargetDistance.getPitch();
                 TargetRange = PhotonUtils.calculateDistanceToTargetMeters(Units.inchesToMeters(17.0), Units.inchesToMeters(44), Units.degreesToRadians(-30), Units.degreesToRadians(Math.abs(TargetDistance.getPitch())));
                 CalculatedDistance = Units.metersToInches(TargetRange);
-            }else{
-                TargetYaw = 0.0;
             }
             CalculatedAngle = CurrentTurretAngle+TargetYaw;
-
+            TargetYaw = 0.0;
            
             if (CalculatedAngle-CurrentTurretAngle > 180){
                 CalculatedAngle = CalculatedAngle-360;
