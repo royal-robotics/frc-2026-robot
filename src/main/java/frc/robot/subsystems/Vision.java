@@ -60,6 +60,8 @@ public class Vision extends SubsystemBase {
 
     private boolean EvenLoop = false;
 
+    private boolean Demo = false;
+
 
     private final AprilTagFieldLayout fieldLayout =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -130,7 +132,9 @@ public class Vision extends SubsystemBase {
 
     public Consumer<PoseEstimate> PassedDistance;
 
-    public Vision(Consumer<PoseEstimate> DistanceConsumer) {
+    public Consumer<PhotonTrackedTarget> TargetDistance;
+
+    public Vision(Consumer<PoseEstimate> DistanceConsumer,Consumer<PhotonTrackedTarget> DistancetoTarget) {
         frontLeftPoseEstimator = new PhotonPoseEstimator(fieldLayout,
              frontLeftRobotToCamera);
         frontRightPoseEstimator = new PhotonPoseEstimator(fieldLayout,
@@ -158,10 +162,33 @@ public class Vision extends SubsystemBase {
         //SmartDashboard.putData(Field);
 
         PassedDistance = DistanceConsumer;
+        TargetDistance = DistancetoTarget;
     }
 
+    public void turnPoseOff(){
+    Demo = true;
+}
+
     public void periodic(){
+        if(Demo==false){
         getEstimatedPose();
+        }else{
+        getShooterDistance();
+        }
+    }
+
+    public void getShooterDistance(){
+        List<PhotonPipelineResult> list = shooterCamera.getAllUnreadResults();
+        if (list.size()>=1){
+        PhotonPipelineResult result = list.get(list.size()-1);
+        List<PhotonTrackedTarget> targets = result.getTargets();
+        for(PhotonTrackedTarget target : targets){
+            if(target.getFiducialId()==10){
+                TargetDistance.accept(target);
+            }
+        };
+    }
+        
     }
 
     public void getEstimatedPose() {
